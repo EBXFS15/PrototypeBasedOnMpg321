@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>776</width>
-    <height>588</height>
+    <width>1024</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,11 +19,14 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>771</width>
-      <height>301</height>
+      <width>1021</width>
+      <height>521</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
@@ -95,29 +98,40 @@
       </layout>
      </item>
      <item>
-      <widget class="QTextEdit" name="textEdit"/>
+      <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <item>
+        <widget class="QListWidget" name="FileList"/>
+       </item>
+       <item>
+        <widget class="QLabel" name="mediaImage">
+         <property name="text">
+          <string>TextLabel</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QComboBox" name="PlayList"/>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <property name="sizeConstraint">
+        <enum>QLayout::SetMaximumSize</enum>
+       </property>
+       <item>
+        <widget class="QTextEdit" name="textEdit">
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>200</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
-   </widget>
-   <widget class="QListWidget" name="FileList">
-    <property name="geometry">
-     <rect>
-      <x>270</x>
-      <y>330</y>
-      <width>451</width>
-      <height>192</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QComboBox" name="PlayList">
-    <property name="geometry">
-     <rect>
-      <x>50</x>
-      <y>330</y>
-      <width>221</width>
-      <height>27</height>
-     </rect>
-    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -125,7 +139,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>776</width>
+     <width>1024</width>
      <height>25</height>
     </rect>
    </property>
