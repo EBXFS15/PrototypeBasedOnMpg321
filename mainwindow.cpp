@@ -304,7 +304,9 @@ MainWindow::on_PlayList_activated(const QString &arg1)
     static const char PathTag[] = "path";
     char sectionName[30]        = {'\0'};
     char key[20]                = {'\0'};
+    char imageKey[]             = "image";
     char songName[100]          = {'\0'};
+    char imageName[256]         = {'\0'};
 
     int ret = snprintf(sectionName, 30, "%s%d", "PlayList", nbr);
     if (ret >= 30) {
@@ -324,6 +326,19 @@ MainWindow::on_PlayList_activated(const QString &arg1)
     }
 
     KvpAttributeState status = KvpAttributeSuccess;
+
+    // get image path
+    status = arLibGetAttributeByFileId(fileId,
+                                       '=',         // delimiter
+                                       sectionName, // section
+                                       imageKey,    // key
+                                       imageName,   // value
+                                       100);        // length of songName buffer
+
+    QImage imageObject;
+    imageObject.load(imageName);
+    ui->mediaImage->setPixmap(QPixmap::fromImage(imageObject));
+
     for (uint8_t pathNbr = 1; status == KvpAttributeSuccess; pathNbr++) {
 
         ret = snprintf(key, 30, "%s%d", PathTag, pathNbr);
