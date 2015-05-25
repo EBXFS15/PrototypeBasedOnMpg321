@@ -13,9 +13,17 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
-        mainwindow.cpp
+        mainwindow.cpp \
+    arlibkeyvalueparser.c \
+    gpio.c \
+    fileplayer.cpp \
+    mplayer.cpp
 
-HEADERS  += mainwindow.h
+HEADERS  += mainwindow.h \
+    arlibkeyvalueparser.h \
+    gpio.h \
+    fileplayer.h \
+    mplayer.h
 
 FORMS    += mainwindow.ui
 
