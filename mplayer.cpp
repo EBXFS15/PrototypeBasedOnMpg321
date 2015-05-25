@@ -26,7 +26,7 @@ void mplayer::player_update()
     QString msg = player->readAll();
     QString playBackInfo = msg.mid(msg.lastIndexOf("A:"));
     if(playBackInfo.startsWith("A:") && playBackInfo.endsWith("\r")){
-        QRegExp rx("(\\d{1,}.\\d{1,})");
+        QRegExp rx("((\\d:){0,}\\d{1,}.\\d{1,})");
         QStringList list;
         int pos = 0;
 
@@ -38,9 +38,9 @@ void mplayer::player_update()
             float currentPostion = list[list.count()-4].toFloat();
             float duration = list[list.count()-2].toFloat();
             if ((duration - currentPostion) < 0.3){
-                stop();
-                emit playbackPosition(100);
-                emit playbackEnded();
+                //stop();
+                //emit playbackPosition(100);
+                //emit playbackEnded();
             }
             else{
                 int position = (currentPostion / duration)*100;
