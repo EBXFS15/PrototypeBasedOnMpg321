@@ -4,7 +4,7 @@
 #include <QTextStream>
 #include <QDebug>
 #include <QTimer>
-#include "arlibkeyvalueparser.h"
+#include "kvp_keyvalueparser.h"
 #include "gpio.h"
 
 
@@ -129,7 +129,7 @@ MainWindow::initPlayList(void)
     char playListName[100]          = {'\0'};
     uint32_t fileId                 = 0;
 
-    int ret = arLibKeyValueFileOpen(THE_CONFIG_FILE_PATH"/"THE_CONFIG_FILE_NAME, &fileId, false);
+    int ret = kvp_fileOpen(THE_CONFIG_FILE_PATH"/"THE_CONFIG_FILE_NAME, &fileId, false);
     if (0 != ret) {
         // Could not open the .config file.
         // TODO: What error handling do we provide....a status line?
@@ -149,19 +149,19 @@ MainWindow::initPlayList(void)
             continue;
         }
 
-        status = arLibGetAttributeByFileId(fileId,
-                                           '=',          // delimiter
-                                           sectionName,  // section
-                                           key,          // key
-                                           playListName, // value
-                                           100);         // length of playListName buffer
+        status = kvp_getAttributeByFileId(fileId,
+                                          '=',          // delimiter
+                                          sectionName,  // section
+                                          key,          // key
+                                          playListName, // value
+                                          100);         // length of playListName buffer
 
         if (status == KvpAttributeSuccess) {
             ui->PlayList->addItem(playListName);
         }
     } // for (uint8_t nbr = 1; status == KvpAttributeSuccess; nbr++;)
 
-    bool ok = arLibKeyValueFileClose(fileId);
+    bool ok = kvp_fileClose(fileId);
     if (false == ok) {
         // Could not close the .config file.
         // TODO: What error handling do we provide....a status line?
@@ -182,7 +182,7 @@ MainWindow::get_PlayList_from_name(const char* inNameP)
     char playListName[100]          = {'\0'};
 
     uint32_t fileId = 0;
-    int ret = arLibKeyValueFileOpen(THE_CONFIG_FILE_PATH"/"THE_CONFIG_FILE_NAME, &fileId, false);
+    int ret = kvp_fileOpen(THE_CONFIG_FILE_PATH"/"THE_CONFIG_FILE_NAME, &fileId, false);
     if (0 != ret) {
         // Could not open the .config file.
         // TODO: What error handling do we provide....a status line?
@@ -202,12 +202,12 @@ MainWindow::get_PlayList_from_name(const char* inNameP)
             continue;
         }
 
-        status = arLibGetAttributeByFileId(fileId,
-                                           '=',          // delimiter
-                                           sectionName,  // section
-                                           key,          // key
-                                           playListName, // value
-                                           100);         // length of playListName buffer
+        status = kvp_getAttributeByFileId(fileId,
+                                          '=',          // delimiter
+                                          sectionName,  // section
+                                          key,          // key
+                                          playListName, // value
+                                          100);         // length of playListName buffer
 
         if (status == KvpAttributeSuccess) {
             int ret = strcmp(inNameP, playListName);
@@ -219,7 +219,7 @@ MainWindow::get_PlayList_from_name(const char* inNameP)
     } // for (uint8_t nbr = 1; status == KvpAttributeSuccess; nbr++;)
 
 
-    bool ok = arLibKeyValueFileClose(fileId);
+    bool ok = kvp_fileClose(fileId);
     if (false == ok) {
         // Could not close the .config file.
         // TODO: What error handling do we provide....a status line?
@@ -238,7 +238,7 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
     char rfidName[100]              = {'\0'};
 
     uint32_t fileId = 0;
-    int ret = arLibKeyValueFileOpen(THE_CONFIG_FILE_PATH"/"THE_CONFIG_FILE_NAME, &fileId, false);
+    int ret = kvp_fileOpen(THE_CONFIG_FILE_PATH"/"THE_CONFIG_FILE_NAME, &fileId, false);
     if (0 != ret) {
         // Could not open the .config file.
         // TODO: What error handling do we provide....a status line?
@@ -258,12 +258,12 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
             continue;
         }
 
-        status = arLibGetAttributeByFileId(fileId,
-                                           '=',          // delimiter
-                                           sectionName,  // section
-                                           key,          // key
-                                           rfidName,     // value
-                                           100);         // length of playListName buffer
+        status = kvp_getAttributeByFileId(fileId,
+                                          '=',          // delimiter
+                                          sectionName,  // section
+                                          key,          // key
+                                          rfidName,     // value
+                                          100);         // length of playListName buffer
 
         if (status == KvpAttributeSuccess) {
             int ret = strcmp(inRfidP, rfidName);
@@ -275,7 +275,7 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
     } // for (uint8_t nbr = 1; status == KvpAttributeSuccess; nbr++;)
 
 
-    bool ok = arLibKeyValueFileClose(fileId);
+    bool ok = kvp_fileClose(fileId);
     if (false == ok) {
         // Could not close the .config file.
         // TODO: What error handling do we provide....a status line?
@@ -318,7 +318,7 @@ MainWindow::on_PlayList_activated(const QString &arg1)
 
 
     uint32_t fileId = 0;
-    ret = arLibKeyValueFileOpen("/media/mp3/.config", &fileId, false);
+    ret = kvp_fileOpen("/media/mp3/.config", &fileId, false);
     if (0 != ret) {
         // Could not open the .config file.
         // TODO: What error handling do we provide....a status line?
@@ -328,17 +328,19 @@ MainWindow::on_PlayList_activated(const QString &arg1)
     KvpAttributeState status = KvpAttributeSuccess;
 
     // get image path
-    status = arLibGetAttributeByFileId(fileId,
-                                       '=',         // delimiter
-                                       sectionName, // section
-                                       imageKey,    // key
-                                       imageName,   // value
-                                       100);        // length of songName buffer
+    status = kvp_getAttributeByFileId(fileId,
+                                      '=',         // delimiter
+                                      sectionName, // section
+                                      imageKey,    // key
+                                      imageName,   // value
+                                      100);        // length of songName buffer
 
     QImage imageObject;
     imageObject.load(imageName);
     ui->mediaImage->setPixmap(QPixmap::fromImage(imageObject));
 
+    // set status to allow add files to the file list even the above image could not be found
+    status = KvpAttributeSuccess;
     for (uint8_t pathNbr = 1; status == KvpAttributeSuccess; pathNbr++) {
 
         ret = snprintf(key, 30, "%s%d", PathTag, pathNbr);
@@ -349,12 +351,12 @@ MainWindow::on_PlayList_activated(const QString &arg1)
             continue;
         }
 
-        status = arLibGetAttributeByFileId(fileId,
-                                           '=',         // delimiter
-                                           sectionName, // section
-                                           key,         // key
-                                           songName,    // value
-                                           100);        // length of songName buffer
+        status = kvp_getAttributeByFileId(fileId,
+                                          '=',         // delimiter
+                                          sectionName, // section
+                                          key,         // key
+                                          songName,    // value
+                                          100);        // length of songName buffer
 
         if (status == KvpAttributeSuccess) {
             ui->FileList->addItem(songName);
@@ -362,7 +364,7 @@ MainWindow::on_PlayList_activated(const QString &arg1)
     } // for (uint8_t nbr = 1; status == KvpAttributeSuccess; nbr++;)
 
 
-    bool ok = arLibKeyValueFileClose(fileId);
+    bool ok = kvp_fileClose(fileId);
     if (false == ok) {
         // Could not close the .config file.
         // TODO: What error handling do we provide....a status line?
