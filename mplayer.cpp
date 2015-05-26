@@ -26,7 +26,7 @@ void mplayer::player_update()
     QString msg = player->readAll();
     QString playBackInfo = msg.mid(msg.lastIndexOf("A:"));
     if(playBackInfo.startsWith("A:") && playBackInfo.endsWith("\r")){
-        QRegExp rx("((\\d:){0,}\\d{1,}.\\d{1,})");
+        QRegExp rx("(\\d{1,}.\\d{1,}\\s)");
         QStringList list;
         int pos = 0;
 
