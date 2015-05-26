@@ -8,7 +8,7 @@ mplayer::mplayer(QObject *parent) : QObject(parent)
     player = new QProcess;
     connect(player, SIGNAL(readyReadStandardOutput()), this, SLOT(player_update()));
     connect(player, SIGNAL(readyReadStandardError()), this, SLOT(player_update()));
-    player->start("mplayer", QStringList() << "-slave" <<"-input" << "nodefault-bindings" << "-noconfig" << "all"  << "-idle");
+    player->start("mplayer", QStringList() << "-slave" << "-quiet" << "-input" << "nodefault-bindings" << "-noconfig" << "all"  << "-idle");
 }
 
 mplayer::~mplayer()

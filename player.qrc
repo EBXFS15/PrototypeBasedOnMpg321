@@ -1,0 +1,10 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file alias="play">Resources/icons/media-playback-start.png</file>
+        <file alias="stop">Resources/icons/media-playback-stop.png</file>
+        <file alias="forward">Resources/icons/media-skip-forward.png</file>
+        <file alias="backward">Resources/icons/media-skip-backward.png</file>
+        <file alias="pause">Resources/icons/media-playback-pause.png</file>
+        <file alias="quit">Resources/icons/media-playback-quit.png</file>
+    </qresource>
+</RCC>
