@@ -34,9 +34,9 @@ void mplayer::player_update()
             list << rx.cap(1);
             pos += rx.matchedLength();
         }
-        if (list.count() == 5){
-            float currentPostion = list[list.count()-4].toFloat();
-            float duration = list[list.count()-2].toFloat();
+        if (list.count() == 2){
+            float currentPostion = list[0].toFloat();
+            float duration = list[1].toFloat();
             if ((duration - currentPostion) < 0.3){
                 //stop();
                 //emit playbackPosition(100);
