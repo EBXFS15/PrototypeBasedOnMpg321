@@ -13,8 +13,22 @@ class mplayer : public QObject
     bool paused;
 
 public:
+    enum State {
+        NotStartedState = -1,
+        IdleState,
+        LoadingState,
+        StoppedState,
+        PlayingState,
+        BufferingState,
+        PausedState,
+        ErrorState
+    };
+
+public:
     explicit mplayer(QObject *parent = 0);
     ~mplayer();
+
+    State m_state;
 
 signals:
     void playbackInfo(QString filename);
@@ -29,9 +43,11 @@ public slots:
     void pause();
     void ff(int frames);
     void rw(int frames);
+    void setVolume(int value);
 
 private slots:
     void player_update();
+    void writeCommand(const QString &command);
 };
 
 #endif // MPLAYER_H

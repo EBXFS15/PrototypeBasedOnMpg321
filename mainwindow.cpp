@@ -52,8 +52,9 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(player,SIGNAL(playbackPosition(int)), this, SLOT(on_currentPosition(int)));
     connect(player,SIGNAL(playbackEnded()), this, SLOT(on_playbackEnded()));
 
-
     ui->setupUi(this);
+
+    ui->statusBar->showMessage("Idle");
 
     // --- Initialise the play lists from .config file ---
     initPlayList();
@@ -414,3 +415,17 @@ MainWindow::timeout_KEY(void)
         }
     }
 } // MainWindow::timeout_KEY
+
+void
+MainWindow::on_volumeSlider_valueChanged(int value)
+{
+    if(value<=ui->volumeSlider->maximum() &&
+       value>=ui->volumeSlider->minimum())
+    {
+        player->setVolume(value);
+    }
+    else
+    {
+        ui->statusBar->showMessage("Error: wrong volume.");
+    }
+}

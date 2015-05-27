@@ -100,3 +100,13 @@ void mplayer::pause(){
     player->write("pause\n");
     paused = !paused;
 }
+
+void mplayer::setVolume(int value)
+{
+    writeCommand(QString("volume %1 1").arg(value));
+}
+
+void mplayer::writeCommand(const QString &command)
+{
+    player->write(command.toLocal8Bit()+"\n");
+}

@@ -62,6 +62,8 @@ private slots:
     // The method checks for a pressed key and invokes the appropriate function.
     void timeout_KEY(void);
 
+    void on_volumeSlider_valueChanged(int value);
+
 private:
     Ui::MainWindow *ui;    
     char* myActualPlayedSongP;

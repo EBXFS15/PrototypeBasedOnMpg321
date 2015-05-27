@@ -6,5 +6,7 @@
         <file alias="backward">Resources/icons/media-skip-backward.png</file>
         <file alias="pause">Resources/icons/media-playback-pause.png</file>
         <file alias="quit">Resources/icons/media-playback-quit.png</file>
+        <file>Resources/icons/grey_sliderLeft.png</file>
+        <file>Resources/icons/grey_sliderVertical.png</file>
     </qresource>
 </RCC>
