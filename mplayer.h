@@ -32,6 +32,7 @@ public slots:
 
 private slots:
     void player_update();
+    void sendCommandToPlayer(QByteArray cmd);
 };
 
 #endif // MPLAYER_H
