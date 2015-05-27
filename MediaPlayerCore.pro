@@ -14,16 +14,16 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    arlibkeyvalueparser.c \
     gpio.c \
     fileplayer.cpp \
-    mplayer.cpp
+    mplayer.cpp \
+    kvp_keyvalueparser.c
 
 HEADERS  += mainwindow.h \
-    arlibkeyvalueparser.h \
     gpio.h \
     fileplayer.h \
-    mplayer.h
+    mplayer.h \
+    kvp_keyvalueparser.h
 
 FORMS    += mainwindow.ui
 
@@ -36,3 +36,6 @@ LIBS += -L/opt/embedded/bbb/rootfs/usr/local/lib
 LIBS += -L/opt/embedded/bbb/rootfs/usr/local/qt-5.3/lib -lz -lpthread -lm -lqwt -lQt5Gui -lGLES_CM -lGLESv2 -lusc
 target.path = /usr/local/bin
 INSTALLS += target
+
+RESOURCES += \
+    player.qrc

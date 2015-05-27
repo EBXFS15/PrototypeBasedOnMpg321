@@ -8,7 +8,7 @@ mplayer::mplayer(QObject *parent) : QObject(parent)
     player = new QProcess;
     connect(player, SIGNAL(readyReadStandardOutput()), this, SLOT(player_update()));
     connect(player, SIGNAL(readyReadStandardError()), this, SLOT(player_update()));
-    player->start("mplayer", QStringList() << "-slave" <<"-input" << "nodefault-bindings" << "-noconfig" << "all"  << "-idle");
+    player->start("mplayer", QStringList() << "-slave" << "-quiet" << "-input" << "nodefault-bindings" << "-noconfig" << "all"  << "-idle");
 }
 
 mplayer::~mplayer()
@@ -108,4 +108,14 @@ void mplayer::pause(){
     sendCommandToPlayer("pause");
     /*! Continues playback if play is pressed while the player is paused*/
     paused = !paused;
+}
+
+void mplayer::setVolume(int value)
+{
+    writeCommand(QString("volume %1 1").arg(value));
+}
+
+void mplayer::writeCommand(const QString &command)
+{
+    player->write(command.toLocal8Bit()+"\n");
 }
