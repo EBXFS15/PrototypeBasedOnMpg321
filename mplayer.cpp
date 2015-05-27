@@ -8,7 +8,7 @@ mplayer::mplayer(QObject *parent) : QObject(parent)
     player = new QProcess;
     connect(player, SIGNAL(readyReadStandardOutput()), this, SLOT(player_update()));
     connect(player, SIGNAL(readyReadStandardError()), this, SLOT(player_update()));
-    player->start("mplayer", QStringList() << "-slave" << "-quiet" << "-input" << "nodefault-bindings" << "-noconfig" << "all"  << "-idle");
+    player->start("mplayer", QStringList() << "-slave"  << "-input" << "nodefault-bindings" << "-noconfig" << "all"  << "-idle");
 }
 
 mplayer::~mplayer()
@@ -38,9 +38,9 @@ void mplayer::player_update()
             float currentPostion = list[0].toFloat();
             float duration = list[1].toFloat();
             if ((duration - currentPostion) < 0.3){                
-                //stop();
-                //emit playbackPosition(100);
-                //emit playbackEnded();                
+                stop();
+                emit playbackPosition(100);
+                emit playbackEnded();
             }
             else{
                 int position = (currentPostion / duration)*100;
@@ -48,13 +48,17 @@ void mplayer::player_update()
             }
         }
     }
-    emit statusChanged(msg);
+    else{
+        if(!msg.startsWith("[")){
+            emit statusChanged(msg);
+        }
+    }
 }
 
 /*! Adds a line-feed to the QByteArray in order to trigger the player to start interpretation of cmd*/
-void mplayer::sendCommandToPlayer(QByteArray cmd){
+void mplayer::sendCommandToPlayer(QString cmd){
     cmd.append("\n");
-    player->write(cmd);
+    player->write(cmd.toLocal8Bit());
 }
 
 /*! defines the file to play when the play function is called*/
@@ -93,13 +97,13 @@ void mplayer::stop(){
 }
 
 void mplayer::ff(int frames){
-    QByteArray cmd = "seek +";
+    QString cmd = "seek +";
     cmd.append(QString::number(frames/100));
     sendCommandToPlayer(cmd);
 }
 
 void mplayer::rw(int frames){
-    QByteArray cmd = "seek -";
+    QString cmd = "seek -";
     cmd.append(QString::number(frames/100));
     sendCommandToPlayer(cmd);
 }
@@ -111,11 +115,6 @@ void mplayer::pause(){
 }
 
 void mplayer::setVolume(int value)
-{
-    writeCommand(QString("volume %1 1").arg(value));
-}
-
-void mplayer::writeCommand(const QString &command)
-{
-    player->write(command.toLocal8Bit()+"\n");
+{    
+    sendCommandToPlayer(QString("volume %1 1").arg(value));
 }

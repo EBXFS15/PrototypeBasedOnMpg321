@@ -46,8 +46,8 @@ public slots:
     void setVolume(int value);
 
 private slots:
-    void player_update();
-    void sendCommandToPlayer(QByteArray cmd);
+    void player_update();    
+    void sendCommandToPlayer(QString cmd);
 };
 
 #endif // MPLAYER_H
