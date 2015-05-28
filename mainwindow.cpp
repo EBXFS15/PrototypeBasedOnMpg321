@@ -93,7 +93,9 @@ void MainWindow::on_btn_RW_pressed()
 }
 
 void MainWindow::on_btn_close_pressed()
-{  
+{     
+    /** Cedric: TODO: Move this to ~MainWindow()
+     */
     // --- Free GIO resources ---
     gpio_unexport(7);
 
@@ -134,6 +136,9 @@ MainWindow::initPlayList(void)
     if (0 != ret) {
         // Could not open the .config file.
         // TODO: What error handling do we provide....a status line?
+        /** Cedric: I would suggest to pop up a messagebox and to close the application.
+         *  Reason: what can the user do through our GUI to solve the problem
+         * */
         return;
     }
 
@@ -165,7 +170,9 @@ MainWindow::initPlayList(void)
     bool ok = kvp_fileClose(fileId);
     if (false == ok) {
         // Could not close the .config file.
-        // TODO: What error handling do we provide....a status line?
+        // TODO: What error handling do we provide....a status line?       
+        /** Cedric question: What happens if the file was not closed correctyl. Has it any impact on the behaviour of the player?
+         */
     }
 
     // Show the files from the default play list
@@ -187,6 +194,9 @@ MainWindow::get_PlayList_from_name(const char* inNameP)
     if (0 != ret) {
         // Could not open the .config file.
         // TODO: What error handling do we provide....a status line?
+        /** Cedric: I would suggest to pop up a messagebox and to close the application.
+         *  Reason: what can the user do through our GUI to solve the problem
+         * */
         return 255;
     }
 
@@ -224,6 +234,8 @@ MainWindow::get_PlayList_from_name(const char* inNameP)
     if (false == ok) {
         // Could not close the .config file.
         // TODO: What error handling do we provide....a status line?
+        /** Cedric question: What happens if the file was not closed correctyl. Has it any impact on the behaviour of the player?
+         */
     }
 
     return nbr;
@@ -243,6 +255,8 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
     if (0 != ret) {
         // Could not open the .config file.
         // TODO: What error handling do we provide....a status line?
+        /** Cedric: As above
+         */
         return 255;
     }
 
@@ -280,6 +294,8 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
     if (false == ok) {
         // Could not close the .config file.
         // TODO: What error handling do we provide....a status line?
+        /** Cedric: As above
+         */
     }
 
     return nbr;
@@ -319,6 +335,8 @@ MainWindow::on_PlayList_activated(const QString &arg1)
 
 
     uint32_t fileId = 0;
+    /** Cedric: Why do we have here a magic path? Is there any reason for this?
+     */
     ret = kvp_fileOpen("/media/mp3/.config", &fileId, false);
     if (0 != ret) {
         // Could not open the .config file.
@@ -369,6 +387,8 @@ MainWindow::on_PlayList_activated(const QString &arg1)
     if (false == ok) {
         // Could not close the .config file.
         // TODO: What error handling do we provide....a status line?
+        /** Cedric: As above
+         */
     }
 } // MainWindow::on_PlayList_activated
 
