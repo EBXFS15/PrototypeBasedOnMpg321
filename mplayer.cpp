@@ -8,7 +8,22 @@ mplayer::mplayer(QObject *parent) : QObject(parent)
     player = new QProcess;
     connect(player, SIGNAL(readyReadStandardOutput()), this, SLOT(player_update()));
     connect(player, SIGNAL(readyReadStandardError()), this, SLOT(player_update()));
-    player->start("mplayer", QStringList() << "-slave"  << "-input" << "nodefault-bindings" << "-noconfig" << "all"  << "-idle");
+    seeking = 0;
+    paused = false;
+    /*!
+      * The following options configure the mplayer to issue at the end of each file a clear signal "EOF code: 1"
+      * really-quiet=1
+      * msglevel=statusline=6
+      * msglevel=global=6
+      */
+    QStringList arguments;
+    arguments << "-slave";
+    arguments << "-input" << "nodefault-bindings";
+    arguments << "-really-quiet" << "1";
+    arguments << "-msglevel" << "statusline=6";
+    arguments << "-msglevel" << "global=6";
+    arguments << "-idle";
+    player->start("mplayer", arguments);
 }
 
 mplayer::~mplayer()
@@ -18,7 +33,6 @@ mplayer::~mplayer()
     player->closeWriteChannel();
     player->waitForFinished();
     delete player;
-
 }
 
 void mplayer::player_update()
@@ -37,22 +51,18 @@ void mplayer::player_update()
         if (list.count() == 2){
             float currentPostion = list[0].toFloat();
             float duration = list[1].toFloat();
-            if ((duration - currentPostion) < 0.3){                
-                stop();
-                emit playbackPosition(100);
-                emit playbackEnded();
-            }
-            else{
-                int position = (currentPostion / duration)*100;
-                emit playbackPosition(position);
+            int position = (currentPostion / duration)*1000;
+            emit playbackPosition(position);
+            if (seeking >= 0){
+                seeking--;
             }
         }
     }
-    else{
-        if(!msg.startsWith("[")){
-            emit statusChanged(msg);
-        }
+    if(msg.contains("EOF code: 1")){
+        emit playbackPosition(1000);
+        emit playbackEnded();
     }
+    emit statusChanged(msg);
 }
 
 /*! Adds a line-feed to the QByteArray in order to trigger the player to start interpretation of cmd*/
@@ -86,7 +96,7 @@ void mplayer::play(){
 
     /*! Continues playback if play is pressed while the player is paused*/
     paused = false;
-
+    emit playbackStarted();
     return;
 
 }
@@ -97,15 +107,21 @@ void mplayer::stop(){
 }
 
 void mplayer::ff(int frames){
-    QString cmd = "seek +";
-    cmd.append(QString::number(frames/100));
-    sendCommandToPlayer(cmd);
+    if (seeking<0){
+        QString cmd = "seek +";
+        cmd.append(QString::number(frames/100));
+        sendCommandToPlayer(cmd);
+        seeking = 150;
+    }
 }
 
 void mplayer::rw(int frames){
-    QString cmd = "seek -";
-    cmd.append(QString::number(frames/100));
-    sendCommandToPlayer(cmd);
+    if (seeking<0){
+        QString cmd = "seek -";
+        cmd.append(QString::number(frames/100));
+        sendCommandToPlayer(cmd);
+        seeking = 150;
+    }
 }
 
 void mplayer::pause(){

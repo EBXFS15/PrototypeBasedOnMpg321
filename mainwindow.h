@@ -32,6 +32,8 @@ private slots:
 
     void on_btn_pause_pressed();
 
+    void on_playbackStarted();
+
     void on_currentPosition(int position);
 
     void on_playbackEnded();
@@ -62,6 +64,10 @@ private slots:
     void timeout_KEY(void);
 
     void on_volumeSlider_valueChanged(int value);
+
+    void playbackOnGoing(bool value);
+
+    bool playNext();
 
 private:
     Ui::MainWindow *ui;

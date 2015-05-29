@@ -71,6 +71,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(player,SIGNAL(statusChanged(QString)), this, SLOT(player_update(QString)));
     connect(player,SIGNAL(playbackInfo(QString)), this, SLOT(player_update(QString)));
     connect(player,SIGNAL(playbackPosition(int)), this, SLOT(on_currentPosition(int)));
+    connect(player,SIGNAL(playbackStarted()), this, SLOT(on_playbackStarted()));
     connect(player,SIGNAL(playbackEnded()), this, SLOT(on_playbackEnded()));
 
     ui->setupUi(this);
@@ -113,14 +114,33 @@ void MainWindow::player_update(QString newStatus)
     ui->textEdit->append(newStatus);
 }
 
+bool MainWindow::playNext()
+{
+    if ((ui->FileList->currentRow()+1) < ui->FileList->count()){
+        ui->FileList->setCurrentRow(ui->FileList->currentRow()+1);
+        ui->FileList->itemClicked(ui->FileList->currentItem());
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
+
 
 void MainWindow::on_btn_play_pressed()
 {
-    player->play();
+    if(ui->FileList->currentRow() < 0){
+        playNext();
+    }
+    else{
+        player->play();
+    }
 }
 
 void MainWindow::on_btn_stop_pressed()
 {
+    playbackOnGoing(false);
     player->stop();
 }
 
@@ -137,22 +157,41 @@ void MainWindow::on_btn_RW_pressed()
 void MainWindow::on_btn_close_pressed()
 {     
 
-
 }
 
 void MainWindow::on_btn_pause_pressed()
 {
     player->pause();
+
 }
+
+void MainWindow::on_playbackStarted(){
+    playbackOnGoing(true);
+}
+
 
 void MainWindow::on_currentPosition(int position){
     this->ui->hBar_position->setValue(position);
 }
 
 void MainWindow::on_playbackEnded(){
-    if ((ui->FileList->currentRow()+1) < ui->FileList->count()){
-        ui->FileList->setCurrentRow(ui->FileList->currentRow()+1);
-        ui->FileList->itemClicked(ui->FileList->currentItem());
+    playbackOnGoing(false);
+    playNext();
+}
+
+void MainWindow::playbackOnGoing(bool value){
+    ui->btn_pause->setEnabled(value);
+    ui->btn_stop->setEnabled(value);
+    ui->btn_ff->setEnabled(value);
+    ui->btn_RW->setEnabled(value);
+
+    if(value)
+    {
+        ui->statusBar->showMessage("Playing");
+    }
+    else
+    {
+        ui->statusBar->showMessage("Idle");
     }
 }
 

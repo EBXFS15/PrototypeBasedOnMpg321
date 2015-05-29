@@ -11,6 +11,7 @@ class mplayer : public QObject
     QString currentFile;
     QString nextFile;
     bool paused;
+    int seeking;
 
 public:
     enum State {
@@ -35,6 +36,7 @@ signals:
     void statusChanged(QString newStatus);
     void playbackEnded();
     void playbackPosition(int);
+    void playbackStarted();
 
 public slots:
     void loadFile(QString path);

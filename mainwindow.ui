@@ -78,7 +78,7 @@
                <item>
                 <widget class="QScrollBar" name="hBar_position">
                  <property name="maximum">
-                  <number>100</number>
+                  <number>1000</number>
                  </property>
                  <property name="value">
                   <number>50</number>
@@ -178,6 +178,9 @@ QSlider::handle:vertical
              </item>
              <item>
               <widget class="QPushButton" name="btn_stop">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string/>
                </property>
@@ -195,6 +198,9 @@ QSlider::handle:vertical
              </item>
              <item>
               <widget class="QPushButton" name="btn_pause">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string/>
                </property>
@@ -212,6 +218,9 @@ QSlider::handle:vertical
              </item>
              <item>
               <widget class="QPushButton" name="btn_ff">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string/>
                </property>
@@ -229,6 +238,9 @@ QSlider::handle:vertical
              </item>
              <item>
               <widget class="QPushButton" name="btn_RW">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string/>
                </property>
@@ -271,8 +283,6 @@ QSlider::handle:vertical
      </item>
     </layout>
    </widget>
-   <zorder>verticalLayoutWidget</zorder>
-   <zorder>textEdit</zorder>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
