@@ -22,29 +22,50 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
-{    
+    ui(new Ui::MainWindow),
+    Key_SW1_GPIO(7),
+    Key_SW2_GPIO(60),
+    Key_SW3_GPIO(48),
+    Key_SW4_GPIO(51),
+    Key_SW5_GPIO(115),
+    Led_1_GPIO(68),
+    Led_2_GPIO(69),
+    Led_Timeout(1000),
+    Key_Timeout(100)
+{
     // --- Setup GPIO's for KEY's and LED's ---
     // SW1
-    gpio_export(7);
-    gpio_setToInput(7);
+    gpio_export(Key_SW1_GPIO);
+    gpio_setToInput(Key_SW1_GPIO);
+    // SW2
+    gpio_export(Key_SW2_GPIO);
+    gpio_setToInput(Key_SW2_GPIO);
+    // SW3
+    gpio_export(Key_SW3_GPIO);
+    gpio_setToInput(Key_SW3_GPIO);
+    // SW4
+    gpio_export(Key_SW4_GPIO);
+    gpio_setToInput(Key_SW4_GPIO);
+    // SW5
+    gpio_export(Key_SW5_GPIO);
+    gpio_setToInput(Key_SW5_GPIO);
 
     // LED 1
-    gpio_export(68);
-    gpio_setToOutput(68);
+    gpio_export(Led_1_GPIO);
+    gpio_setToOutput(Led_1_GPIO);
     // LED 2
-    gpio_export(69);
-    gpio_setToOutput(69);
+    gpio_export(Led_2_GPIO);
+    gpio_setToOutput(Led_2_GPIO);
 
     // --- Set and start LED timer ---
     QTimer *timer_LED = new QTimer(this);
     connect(timer_LED, SIGNAL(timeout()), this, SLOT(timeout_LED()));
-    timer_LED->start(1000);
+    timer_LED->start(Led_Timeout);
 
-    // ---Set and start KEY timer ---
+    // --- Set and start KEY timer ---
     QTimer *timer_KEY = new QTimer(this);
     connect(timer_KEY, SIGNAL(timeout()), this, SLOT(timeout_KEY()));
-    timer_KEY->start(150);
+    timer_KEY->start(Key_Timeout);
 
     player = new mplayer();
     connect(player,SIGNAL(statusChanged(QString)), this, SLOT(player_update(QString)));
@@ -65,13 +86,23 @@ MainWindow::~MainWindow()
     /** Cedric: TODO: Move this to ~MainWindow()
      */
     // --- Free GIO resources ---
-    gpio_unexport(7);
+    // SW1
+    gpio_unexport(Key_SW1_GPIO);
+    // SW2
+    gpio_unexport(Key_SW2_GPIO);
+    // SW3
+    gpio_unexport(Key_SW3_GPIO);
+    // SW4
+    gpio_unexport(Key_SW4_GPIO);
+    // SW5
+    gpio_unexport(Key_SW5_GPIO);
 
-    gpio_clear(68);
-    gpio_clear(69);
-
-    gpio_unexport(68);
-    gpio_unexport(69);
+    // LED1
+    gpio_clear(Led_1_GPIO);
+    gpio_unexport(Led_1_GPIO);
+    // LED2
+    gpio_clear(Led_2_GPIO);
+    gpio_unexport(Led_2_GPIO);
 
     delete player;
     delete ui;
@@ -408,11 +439,11 @@ MainWindow::timeout_LED(void)
     static unsigned short x = 0;
     x++;
     if (x % 2) {
-      gpio_set(68);
-      gpio_clear(69);
+      gpio_set(Led_1_GPIO);
+      gpio_clear(Led_2_GPIO);
     } else {
-      gpio_clear(68);
-      gpio_set(69);
+      gpio_clear(Led_1_GPIO);
+      gpio_set(Led_2_GPIO);
     }
 } // MainWindow::timeout_LED
 
@@ -421,21 +452,96 @@ MainWindow::timeout_KEY(void)
 {
     // --- Handle KEY SW1 --
     // Detect whether user is sleeping and does hold the key,
-    // means a release key has tob detected before we accept
+    // means a release key has to be detected before we accept
     // a new keystroke.
     static bool isSw1Pressed = false;
 
     int key = 1;
-    gpio_get(7, &key);
+    gpio_get(Key_SW1_GPIO, &key);
     if ((0 == key) && (false == isSw1Pressed)) {
         // SW1 pressed
-        //mpg321.write("P");
-        ui->btn_pause->click();
+        ui->btn_stop->click();
         isSw1Pressed = true;
     } else {
         // Wait for key released
         if (1 == key) {
           isSw1Pressed = false;
+        }
+    }
+
+    // --- Handle KEY SW2 --
+    // Detect whether user is sleeping and does hold the key,
+    // means a release key has to be detected before we accept
+    // a new keystroke.
+    static bool isSw2Pressed = false;
+
+    key = 1;
+    gpio_get(Key_SW2_GPIO, &key);
+    if ((0 == key) && (false == isSw2Pressed)) {
+        // SW1 pressed
+        ui->btn_pause->click();
+        isSw2Pressed = true;
+    } else {
+        // Wait for key released
+        if (1 == key) {
+          isSw2Pressed = false;
+        }
+    }
+
+    // --- Handle KEY SW3 --
+    // Detect whether user is sleeping and does hold the key,
+    // means a release key has to be detected before we accept
+    // a new keystroke.
+    static bool isSw3Pressed = false;
+
+    key = 1;
+    gpio_get(Key_SW3_GPIO, &key);
+    if ((0 == key) && (false == isSw3Pressed)) {
+        // SW1 pressed
+        ui->btn_ff->click();
+        isSw3Pressed = false; //true; // do NOT set to true to allow fast ff
+    } else {
+        // Wait for key released
+        if (1 == key) {
+          isSw3Pressed = false;
+        }
+    }
+
+    // --- Handle KEY SW4 --
+    // Detect whether user is sleeping and does hold the key,
+    // means a release key has to be detected before we accept
+    // a new keystroke.
+    static bool isSw4Pressed = false;
+
+    key = 1;
+    gpio_get(Key_SW4_GPIO, &key);
+    if ((0 == key) && (false == isSw4Pressed)) {
+        // SW1 pressed
+        ui->btn_RW->click();
+        isSw4Pressed = false; //true; // do NOT set to true to allow fast rew
+    } else {
+        // Wait for key released
+        if (1 == key) {
+          isSw4Pressed = false;
+        }
+    }
+
+    // --- Handle KEY SW5 --
+    // Detect whether user is sleeping and does hold the key,
+    // means a release key has to be detected before we accept
+    // a new keystroke.
+    static bool isSw5Pressed = false;
+
+    key = 1;
+    gpio_get(Key_SW5_GPIO, &key);
+    if ((0 == key) && (false == isSw5Pressed)) {
+        // SW1 pressed
+        ui->btn_close->click();
+        isSw5Pressed = true;
+    } else {
+        // Wait for key released
+        if (1 == key) {
+          isSw5Pressed = false;
         }
     }
 } // MainWindow::timeout_KEY

@@ -64,8 +64,27 @@ private slots:
     void on_volumeSlider_valueChanged(int value);
 
 private:
-    Ui::MainWindow *ui;    
-    char* myActualPlayedSongP;
+    Ui::MainWindow *ui;
+
+    // Holds the GPIO for key SW1
+    const int Key_SW1_GPIO;
+    // Holds the GPIO for key SW2
+    const int Key_SW2_GPIO;
+    // Holds the GPIO for key SW3
+    const int Key_SW3_GPIO;
+    // Holds the GPIO for key SW4
+    const int Key_SW4_GPIO;
+    // Holds the GPIO for key SW5
+    const int Key_SW5_GPIO;
+    // Holds the GPIO for LED1
+    const int Led_1_GPIO;
+    // Holds the GPIO for LED2
+    const int Led_2_GPIO;
+    // Holds the LED blink timeout value in ms
+    const int Led_Timeout;
+    // Holds the key poll timeout value in ms
+    const int Key_Timeout;
+
 };
 
 #endif // MAINWINDOW_H
