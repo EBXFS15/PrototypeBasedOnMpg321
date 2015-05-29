@@ -4,7 +4,6 @@
 #include <QMainWindow>
 #include <QListWidgetItem>
 #include <stdint.h>
-#include "fileplayer.h"
 #include "mplayer.h"
 
 namespace Ui {

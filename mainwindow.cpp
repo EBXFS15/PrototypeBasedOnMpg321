@@ -62,6 +62,17 @@ MainWindow::MainWindow(QWidget *parent) :
 
 MainWindow::~MainWindow()
 {
+    /** Cedric: TODO: Move this to ~MainWindow()
+     */
+    // --- Free GIO resources ---
+    gpio_unexport(7);
+
+    gpio_clear(68);
+    gpio_clear(69);
+
+    gpio_unexport(68);
+    gpio_unexport(69);
+
     delete player;
     delete ui;
 }
@@ -94,16 +105,7 @@ void MainWindow::on_btn_RW_pressed()
 
 void MainWindow::on_btn_close_pressed()
 {     
-    /** Cedric: TODO: Move this to ~MainWindow()
-     */
-    // --- Free GIO resources ---
-    gpio_unexport(7);
 
-    gpio_clear(68);
-    gpio_clear(69);
-
-    gpio_unexport(68);
-    gpio_unexport(69);
 
 }
 

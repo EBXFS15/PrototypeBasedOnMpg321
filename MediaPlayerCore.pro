@@ -15,13 +15,11 @@ TEMPLATE = app
 SOURCES += main.cpp\
         mainwindow.cpp \
     gpio.c \
-    fileplayer.cpp \
     mplayer.cpp \
     kvp_keyvalueparser.c
 
 HEADERS  += mainwindow.h \
-    gpio.h \
-    fileplayer.h \
+    gpio.h \    
     mplayer.h \
     kvp_keyvalueparser.h
 
