@@ -20,7 +20,7 @@
       <x>0</x>
       <y>0</y>
       <width>1021</width>
-      <height>540</height>
+      <height>577</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -59,15 +59,30 @@
                    <pointsize>14</pointsize>
                   </font>
                  </property>
+                 <property name="frame">
+                  <bool>true</bool>
+                 </property>
                 </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_2"/>
                </item>
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout">
                  <item>
-                  <widget class="QListWidget" name="FileList"/>
-                 </item>
-                 <item>
                   <widget class="QLabel" name="mediaImage">
+                   <property name="minimumSize">
+                    <size>
+                     <width>450</width>
+                     <height>450</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>400</width>
+                     <height>450</height>
+                    </size>
+                   </property>
                    <property name="text">
                     <string>TextLabel</string>
                    </property>
@@ -94,12 +109,17 @@
                <item>
                 <layout class="QHBoxLayout" name="horizontalLayout_2">
                  <item>
-                  <widget class="QTextEdit" name="textEdit">
+                  <widget class="QListWidget" name="FileList">
                    <property name="maximumSize">
                     <size>
-                     <width>1000</width>
-                     <height>200</height>
+                     <width>400</width>
+                     <height>16777215</height>
                     </size>
+                   </property>
+                   <property name="font">
+                    <font>
+                     <pointsize>16</pointsize>
+                    </font>
                    </property>
                   </widget>
                  </item>
@@ -107,7 +127,7 @@
                   <widget class="QSlider" name="volumeSlider">
                    <property name="minimumSize">
                     <size>
-                     <width>100</width>
+                     <width>50</width>
                      <height>0</height>
                     </size>
                    </property>
@@ -137,6 +157,22 @@ QSlider::handle:vertical
                   </widget>
                  </item>
                 </layout>
+               </item>
+               <item>
+                <widget class="QScrollBar" name="hBar_position">
+                 <property name="autoFillBackground">
+                  <bool>false</bool>
+                 </property>
+                 <property name="maximum">
+                  <number>1000</number>
+                 </property>
+                 <property name="value">
+                  <number>0</number>
+                 </property>
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                </widget>
                </item>
               </layout>
              </item>

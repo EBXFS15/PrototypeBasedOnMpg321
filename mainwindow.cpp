@@ -4,6 +4,7 @@
 #include <QTextStream>
 #include <QDebug>
 #include <QTimer>
+#include <QMessageBox>
 #include "kvp_keyvalueparser.h"
 #include "gpio.h"
 
@@ -68,6 +69,7 @@ MainWindow::MainWindow(QWidget *parent) :
     timer_KEY->start(Key_Timeout);
 
     player = new mplayer();
+
     connect(player,SIGNAL(statusChanged(QString)), this, SLOT(player_update(QString)));
     connect(player,SIGNAL(playbackInfo(QString)), this, SLOT(player_update(QString)));
     connect(player,SIGNAL(playbackPosition(int)), this, SLOT(on_currentPosition(int)));
@@ -111,7 +113,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::player_update(QString newStatus)
 {
-    ui->textEdit->append(newStatus);
+    ui->statusBar->showMessage(newStatus);
+    //ui->textEdit->append(newStatus);
 }
 
 bool MainWindow::playNext()
@@ -125,8 +128,6 @@ bool MainWindow::playNext()
         return false;
     }
 }
-
-
 
 void MainWindow::on_btn_play_pressed()
 {
@@ -169,7 +170,6 @@ void MainWindow::on_playbackStarted(){
     playbackOnGoing(true);
 }
 
-
 void MainWindow::on_currentPosition(int position){
     this->ui->hBar_position->setValue(position);
 }
@@ -211,6 +211,8 @@ MainWindow::initPlayList(void)
         /** Cedric: I would suggest to pop up a messagebox and to close the application.
          *  Reason: what can the user do through our GUI to solve the problem
          * */
+
+        showMessageBoxAndClose("Cannot open config file! The application will be closed.");
         return;
     }
 
@@ -245,6 +247,8 @@ MainWindow::initPlayList(void)
         // TODO: What error handling do we provide....a status line?       
         /** Cedric question: What happens if the file was not closed correctyl. Has it any impact on the behaviour of the player?
          */
+
+        showMessageBoxAndClose("Cannot close config file! The application will be closed.");
     }
 
     // Show the files from the default play list
@@ -269,6 +273,8 @@ MainWindow::get_PlayList_from_name(const char* inNameP)
         /** Cedric: I would suggest to pop up a messagebox and to close the application.
          *  Reason: what can the user do through our GUI to solve the problem
          * */
+
+        showMessageBoxAndClose("Cannot open config file! The application will be closed.");
         return 255;
     }
 
@@ -308,6 +314,8 @@ MainWindow::get_PlayList_from_name(const char* inNameP)
         // TODO: What error handling do we provide....a status line?
         /** Cedric question: What happens if the file was not closed correctyl. Has it any impact on the behaviour of the player?
          */
+
+        showMessageBoxAndClose("Cannot close config file! The application will be closed.");
     }
 
     return nbr;
@@ -327,6 +335,7 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
     if (0 != ret) {
         // Could not open the .config file.
         // TODO: What error handling do we provide....a status line?
+        showMessageBoxAndClose("Cannot open config file! The application will be closed.");
         /** Cedric: As above
          */
         return 255;
@@ -366,6 +375,7 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
     if (false == ok) {
         // Could not close the .config file.
         // TODO: What error handling do we provide....a status line?
+        showMessageBoxAndClose("Cannot close config file! The application will be closed.");
         /** Cedric: As above
          */
     }
@@ -409,10 +419,13 @@ MainWindow::on_PlayList_activated(const QString &arg1)
     uint32_t fileId = 0;
     /** Cedric: Why do we have here a magic path? Is there any reason for this?
      */
+    ret = kvp_fileOpen(THE_CONFIG_FILE_PATH"/"THE_CONFIG_FILE_NAME, &fileId, false);
+    //ret = kvp_fileOpen("/media/mp3/.config", &fileId, false);
     ret = kvp_fileOpen("/media/mp3/.config", &fileId, false);
     if (0 != ret) {
         // Could not open the .config file.
         // TODO: What error handling do we provide....a status line?
+        showMessageBoxAndClose("Cannot open config file! The application will be closed.");
         return;
     }
 
@@ -428,7 +441,8 @@ MainWindow::on_PlayList_activated(const QString &arg1)
 
     QImage imageObject;
     imageObject.load(imageName);
-    ui->mediaImage->setPixmap(QPixmap::fromImage(imageObject));
+    QImage scaled = imageObject.scaled(ui->mediaImage->minimumWidth(),ui->mediaImage->minimumHeight());
+    ui->mediaImage->setPixmap(QPixmap::fromImage(scaled));
 
     // set status to allow add files to the file list even the above image could not be found
     status = KvpAttributeSuccess;
@@ -461,15 +475,26 @@ MainWindow::on_PlayList_activated(const QString &arg1)
         // TODO: What error handling do we provide....a status line?
         /** Cedric: As above
          */
+        showMessageBoxAndClose("Cannot close config file! The application will be closed.");
     }
 } // MainWindow::on_PlayList_activated
+
+void
+MainWindow::showMessageBoxAndClose(QString msg)
+{
+   QMessageBox box;
+   box.setWindowTitle("Critical Error");
+   box.setText(msg);
+   box.setStandardButtons(QMessageBox::Ok);
+   box.exec();
+   ui->btn_close->click();
+}
 
 void
 MainWindow::on_FileList_itemClicked(QListWidgetItem *item)
 {
     player->loadFile(item->text());
     player->play();
-
 } // MainWindow::on_FileList_itemClicked
 
 void

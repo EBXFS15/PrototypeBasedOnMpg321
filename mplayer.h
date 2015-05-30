@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QProcess>
+#include <QHash>
+#include <QWidget>
 
 class mplayer : public QObject
 {
@@ -14,22 +16,16 @@ class mplayer : public QObject
     int seeking;
 
 public:
-    enum State {
-        NotStartedState = -1,
-        IdleState,
-        LoadingState,
-        StoppedState,
-        PlayingState,
-        BufferingState,
-        PausedState,
-        ErrorState
-    };
+    typedef struct{
+        QString artist;
+        QString album;
+        QString title;
+    }MediaInfo;
+    MediaInfo m_mediaInfo;
 
 public:
     explicit mplayer(QObject *parent = 0);
     ~mplayer();
-
-    State m_state;
 
 signals:
     void playbackInfo(QString filename);
@@ -46,9 +42,12 @@ public slots:
     void ff(int frames);
     void rw(int frames);
     void setVolume(int value);
+    void startProcess(int winId=0);
 
 private slots:
-    void player_update();    
+    void player_update();
+    void parsePosition(const QString &line);
+    void parseLine(const QString &line);
     void sendCommandToPlayer(QString cmd);
 };
 

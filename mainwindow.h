@@ -39,6 +39,7 @@ private slots:
     void on_playbackEnded();
 
     void player_update(QString newStatus);
+
     // Retrieve all play lists from the configuration
     // file an add the names to play list GUI element.
     void initPlayList(void);
@@ -68,6 +69,8 @@ private slots:
     void playbackOnGoing(bool value);
 
     bool playNext();
+
+    void showMessageBoxAndClose(QString msg);
 
 private:
     Ui::MainWindow *ui;
