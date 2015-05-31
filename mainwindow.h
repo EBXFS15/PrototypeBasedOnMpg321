@@ -93,7 +93,6 @@ private:
     const int Led_Timeout;
     // Holds the key poll timeout value in ms
     const int Key_Timeout;
-
 };
 
 #endif // MAINWINDOW_H

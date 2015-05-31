@@ -8,7 +8,6 @@
 #include "kvp_keyvalueparser.h"
 #include "gpio.h"
 
-
 // TODO:
 // - Extend MainWindow::timeout_KEY() to handle the other key's (SW2-5).
 //   Use the same timer for every key or a seperate timer for each key?
@@ -20,7 +19,11 @@
 #define THE_CONFIG_FILE_NAME ".config"
 
 
-
+/*!
+ * \brief Constructor
+ *
+ * \param parent widget
+ */
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -84,6 +87,11 @@ MainWindow::MainWindow(QWidget *parent) :
     initPlayList();
 }
 
+/*!
+ * \brief Destructor
+ * \details
+ * GPIOs will be unexported here.
+ */
 MainWindow::~MainWindow()
 {
     /** Cedric: TODO: Move this to ~MainWindow()
@@ -111,12 +119,19 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+/*!
+ * \brief Update player status bar
+ *
+ * \param string of the new status
+ */
 void MainWindow::player_update(QString newStatus)
 {
     ui->statusBar->showMessage(newStatus);
-    //ui->textEdit->append(newStatus);
 }
 
+/*!
+ * \brief Play next media file in the current playlist
+ */
 bool MainWindow::playNext()
 {
     if ((ui->FileList->currentRow()+1) < ui->FileList->count()){
@@ -163,7 +178,6 @@ void MainWindow::on_btn_close_pressed()
 void MainWindow::on_btn_pause_pressed()
 {
     player->pause();
-
 }
 
 void MainWindow::on_playbackStarted(){
@@ -195,6 +209,11 @@ void MainWindow::playbackOnGoing(bool value){
     }
 }
 
+/*!
+ * \brief Init playlist
+ * \details
+ * Playlist are parsed from a config file
+ */
 void
 MainWindow::initPlayList(void)
 {
@@ -256,6 +275,12 @@ MainWindow::initPlayList(void)
     on_PlayList_activated(playList);
 } // MainWindow::initPlayList
 
+/*!
+ * \brief Get playlist from name
+ *
+ * \param playlist name string name
+ * \returns \p id integer of the playlist found. returns last playlist id if no playlist found
+ */
 uint8_t
 MainWindow::get_PlayList_from_name(const char* inNameP)
 {
@@ -321,6 +346,12 @@ MainWindow::get_PlayList_from_name(const char* inNameP)
     return nbr;
 } // MainWindow::get_PlayList_from_name
 
+/*!
+ * \brief Get playlist from name
+ *
+ * \param playlist rfid string
+ * \returns \p integer id of the playlist found. returns last playlist id if no playlist found
+ */
 uint8_t
 MainWindow::get_PlayList_from_rfid(const char* inRfidP)
 {
@@ -383,6 +414,11 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
     return nbr;
 } // MainWindow::get_PlayList_from_rfid
 
+/*!
+ * \brief Update file list if one playlist is chosen
+ *
+ * \param playlist string name
+ */
 void
 MainWindow::on_PlayList_activated(const QString &arg1)
 {
@@ -623,3 +659,5 @@ MainWindow::on_volumeSlider_valueChanged(int value)
         ui->statusBar->showMessage("Error: wrong volume.");
     }
 }
+
+

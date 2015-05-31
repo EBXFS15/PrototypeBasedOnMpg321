@@ -15,6 +15,11 @@ static bool fileExists(QString path)
     }
 }
 
+/*!
+ * \brief Constructor
+ *
+ * \param parent object
+ */
 mplayer::mplayer(QObject *parent) : QObject(parent)
 {
     player = new QProcess;
@@ -25,6 +30,11 @@ mplayer::mplayer(QObject *parent) : QObject(parent)
     startProcess();
 }
 
+/*!
+ * \brief start mplayer process
+ *
+ * \param windows id to redirect the video stream
+ */
 void mplayer::startProcess(int winId)
 {
 /*!
@@ -47,6 +57,12 @@ arguments << "-idle";
 player->start("mplayer", arguments);
 }
 
+/*!
+ * \brief Destructor
+ * \details
+ * This function will ask the MPlayer process to quit and block until it has really
+ * finished.
+ */
 mplayer::~mplayer()
 {
     sendCommandToPlayer("stop");
@@ -56,6 +72,15 @@ mplayer::~mplayer()
     delete player;
 }
 
+/*!
+ * \brief update mplayer status
+ * \details
+ * Since MPlayer is run in slave mode, it reads commands from the standard
+ * input. Both standard and error output are parsed  here.
+ *
+ * For a complete list of commands for MPlayer's slave mode, see
+ * http://www.mplayerhq.hu/DOCS/tech/slave.txt .
+ */
 void mplayer::player_update()
 {
     QStringList lines = QString::fromLocal8Bit(player->readAll()).split("\n", QString::SkipEmptyParts);
@@ -65,6 +90,12 @@ void mplayer::player_update()
     }
 }
 
+
+/*!
+ * \brief parse mplayer status (one line at a time)
+ *
+ * \param string of the current line to parse
+ */
 void mplayer::parseLine(const QString &line)
 {
     if (line.startsWith("File not found: ")) {
@@ -110,6 +141,11 @@ void mplayer::parseLine(const QString &line)
     //emit statusChanged(line);
 }
 
+/*!
+ * \brief parse media position
+ *
+ * \param string of the current line to parse
+ */
 void mplayer::parsePosition(const QString &line)
 {
     QString playBackInfo = line.mid(line.lastIndexOf("A:"));
@@ -134,17 +170,34 @@ void mplayer::parsePosition(const QString &line)
     }
 }
 
-/*! Adds a line-feed to the QByteArray in order to trigger the player to start interpretation of cmd*/
+/*!
+ * \brief send command to mplayer slave
+ * \details
+ * Adds a line-feed to the QByteArray in order to trigger the player to start interpretation of cmd
+ *
+ * \param command string
+ */
 void mplayer::sendCommandToPlayer(QString cmd){
     cmd.append("\n");
     player->write(cmd.toLocal8Bit());
 }
 
-/*! defines the file to play when the play function is called*/
+/*!
+ * \brief load media file
+ * \details
+ * defines the file to play when the play function is called
+ *
+ * \param path string to the media file
+ */
 void mplayer::loadFile(QString path){
     nextFile = path;
 }
 
+/*!
+ * \brief play media file
+ * \details
+ * Play media file and send command to get meta data from media file played
+ */
 void mplayer::play(){    
     /*! Continues playback if play is pressed while the player is paused*/
     if(paused == true){
@@ -173,15 +226,25 @@ void mplayer::play(){
     /*! Continues playback if play is pressed while the player is paused*/
     paused = false;
     sendCommandToPlayer("get_meta_artist");
+    sendCommandToPlayer("get_meta_album");
+    sendCommandToPlayer("get_meta_title");
     emit playbackStarted();
     return;
 }
 
+/*!
+ * \brief stop media file
+ */
 void mplayer::stop(){
     sendCommandToPlayer("stop");
     currentFile = "";
 }
 
+/*!
+ * \brief fastforward the media file
+ *
+ * \param number of frames to seek
+ */
 void mplayer::ff(int frames){
     if (seeking<0){
         QString cmd = "seek +";
@@ -191,6 +254,11 @@ void mplayer::ff(int frames){
     }
 }
 
+/*!
+ * \brief rewind the media file
+ *
+ * \param number of frames to seek
+ */
 void mplayer::rw(int frames){
     if (seeking<0){
         QString cmd = "seek -";
@@ -200,6 +268,9 @@ void mplayer::rw(int frames){
     }
 }
 
+/*!
+ * \brief pause the media file
+ */
 void mplayer::pause(){
     sendCommandToPlayer("pause");
     /*! Continues playback if play is pressed while the player is paused*/
@@ -207,7 +278,30 @@ void mplayer::pause(){
     sendCommandToPlayer("pausing_keep_force get_property pause");
 }
 
+/*!
+ * \brief set sound volume
+ *
+ * \param volume value in percent
+ */
 void mplayer::setVolume(int value)
 {    
     sendCommandToPlayer(QString("volume %1 1").arg(value));
 }
+
+/* Documentation follows */
+
+/*!
+ * \class mplayer
+ * \brief A Qt object for embedding MPlayer
+ * \details
+ *
+ * \section Overview
+ *
+ * \subsection comm MPlayer communication
+ *
+ * If you want to communicate with MPlayer through its
+ * <a href="http://www.mplayerhq.hu/DOCS/tech/slave.txt">slave mode protocol</a>,
+ * you can use the sendCommandToPlayer() slot. If MPlayer writes to its standard output
+ * or standard error channel, the signal player_update() will be emitted.
+ *
+*/
