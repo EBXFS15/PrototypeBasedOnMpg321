@@ -475,6 +475,7 @@ MainWindow::on_PlayList_activated(const QString &arg1)
         if (status == KvpAttributeSuccess) {
             ui->FileList->addItem(songName);
         }
+
     } // for (uint8_t nbr = 1; status == KvpAttributeSuccess; nbr++;)
 
 
@@ -502,6 +503,17 @@ MainWindow::showMessageBoxAndClose(QString msg)
 void
 MainWindow::on_FileList_itemClicked(QListWidgetItem *item)
 {
+    QProcess ffmpegProcess;
+    QStringList par;
+    par << "-i" << item->text() << "cover.jpg";
+    ffmpegProcess.start("ffmpeg",par);
+    ffmpegProcess.closeWriteChannel();
+    ffmpegProcess.waitForFinished();
+    QImage imageObject;
+    imageObject.load("cover.jpg");
+    QImage scaled = imageObject.scaled(ui->mediaImage->minimumWidth(),ui->mediaImage->minimumHeight());
+    ui->mediaImage->setPixmap(QPixmap::fromImage(scaled));
+
     player->loadFile(item->text());
     player->play();
 } // MainWindow::on_FileList_itemClicked
