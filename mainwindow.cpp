@@ -7,15 +7,11 @@
 #include <QMessageBox>
 #include "kvp_keyvalueparser.h"
 #include "gpio.h"
+#include <QByteArray>
+#include <QCoreApplication>
 
-// TODO:
-// - Extend MainWindow::timeout_KEY() to handle the other key's (SW2-5).
-//   Use the same timer for every key or a seperate timer for each key?
-//
 
-// IMPROVEMENT:
-// - The directory name where the .config file is stored could set as an application argument.
-#define THE_CONFIG_FILE_PATH "/media/mp3"
+// The configuration file name
 #define THE_CONFIG_FILE_NAME ".config"
 
 
@@ -35,7 +31,8 @@ MainWindow::MainWindow(QWidget *parent) :
     Led_1_GPIO(68),
     Led_2_GPIO(69),
     Led_Timeout(1000),
-    Key_Timeout(100)
+    Key_Timeout(100),
+    myConfigFile(QCoreApplication::applicationDirPath() + "/"THE_CONFIG_FILE_NAME)
 {
     // --- Setup GPIO's for KEY's and LED's ---
     // SW1
@@ -223,14 +220,10 @@ MainWindow::initPlayList(void)
     char playListName[100]          = {'\0'};
     uint32_t fileId                 = 0;
 
-    int ret = kvp_fileOpen(THE_CONFIG_FILE_PATH"/"THE_CONFIG_FILE_NAME, &fileId, false);
+    char* configFileP = myConfigFile.toLocal8Bit().data();
+    int ret = kvp_fileOpen(configFileP, &fileId, false);
     if (0 != ret) {
         // Could not open the .config file.
-        // TODO: What error handling do we provide....a status line?
-        /** Cedric: I would suggest to pop up a messagebox and to close the application.
-         *  Reason: what can the user do through our GUI to solve the problem
-         * */
-
         showMessageBoxAndClose("Cannot open config file! The application will be closed.");
         return;
     }
@@ -263,10 +256,6 @@ MainWindow::initPlayList(void)
     bool ok = kvp_fileClose(fileId);
     if (false == ok) {
         // Could not close the .config file.
-        // TODO: What error handling do we provide....a status line?       
-        /** Cedric question: What happens if the file was not closed correctyl. Has it any impact on the behaviour of the player?
-         */
-
         showMessageBoxAndClose("Cannot close config file! The application will be closed.");
     }
 
@@ -291,14 +280,10 @@ MainWindow::get_PlayList_from_name(const char* inNameP)
     char playListName[100]          = {'\0'};
 
     uint32_t fileId = 0;
-    int ret = kvp_fileOpen(THE_CONFIG_FILE_PATH"/"THE_CONFIG_FILE_NAME, &fileId, false);
+    char* configFileP = myConfigFile.toLocal8Bit().data();
+    int ret = kvp_fileOpen(configFileP, &fileId, false);
     if (0 != ret) {
         // Could not open the .config file.
-        // TODO: What error handling do we provide....a status line?
-        /** Cedric: I would suggest to pop up a messagebox and to close the application.
-         *  Reason: what can the user do through our GUI to solve the problem
-         * */
-
         showMessageBoxAndClose("Cannot open config file! The application will be closed.");
         return 255;
     }
@@ -336,10 +321,6 @@ MainWindow::get_PlayList_from_name(const char* inNameP)
     bool ok = kvp_fileClose(fileId);
     if (false == ok) {
         // Could not close the .config file.
-        // TODO: What error handling do we provide....a status line?
-        /** Cedric question: What happens if the file was not closed correctyl. Has it any impact on the behaviour of the player?
-         */
-
         showMessageBoxAndClose("Cannot close config file! The application will be closed.");
     }
 
@@ -362,13 +343,11 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
     char rfidName[100]              = {'\0'};
 
     uint32_t fileId = 0;
-    int ret = kvp_fileOpen(THE_CONFIG_FILE_PATH"/"THE_CONFIG_FILE_NAME, &fileId, false);
+    char* configFileP = myConfigFile.toLocal8Bit().data();
+    int ret = kvp_fileOpen(configFileP, &fileId, false);
     if (0 != ret) {
         // Could not open the .config file.
-        // TODO: What error handling do we provide....a status line?
         showMessageBoxAndClose("Cannot open config file! The application will be closed.");
-        /** Cedric: As above
-         */
         return 255;
     }
 
@@ -405,10 +384,7 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
     bool ok = kvp_fileClose(fileId);
     if (false == ok) {
         // Could not close the .config file.
-        // TODO: What error handling do we provide....a status line?
         showMessageBoxAndClose("Cannot close config file! The application will be closed.");
-        /** Cedric: As above
-         */
     }
 
     return nbr;
@@ -453,11 +429,8 @@ MainWindow::on_PlayList_activated(const QString &arg1)
 
 
     uint32_t fileId = 0;
-    /** Cedric: Why do we have here a magic path? Is there any reason for this?
-     */
-    ret = kvp_fileOpen(THE_CONFIG_FILE_PATH"/"THE_CONFIG_FILE_NAME, &fileId, false);
-    //ret = kvp_fileOpen("/media/mp3/.config", &fileId, false);
-    ret = kvp_fileOpen("/media/mp3/.config", &fileId, false);
+    char* configFileP = myConfigFile.toLocal8Bit().data();
+    ret = kvp_fileOpen(configFileP, &fileId, false);
     if (0 != ret) {
         // Could not open the .config file.
         // TODO: What error handling do we provide....a status line?

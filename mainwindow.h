@@ -93,6 +93,9 @@ private:
     const int Led_Timeout;
     // Holds the key poll timeout value in ms
     const int Key_Timeout;
+
+    // The absoulte path/file name of the config file
+    QString myConfigFile;
 };
 
 #endif // MAINWINDOW_H
