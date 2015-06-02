@@ -95,7 +95,7 @@ private:
     const int Key_Timeout;
 
     // The absoulte path/file name of the config file
-    QString myConfigFile;
+    const QString myConfigFile;
 };
 
 #endif // MAINWINDOW_H

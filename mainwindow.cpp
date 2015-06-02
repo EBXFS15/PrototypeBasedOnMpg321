@@ -7,13 +7,13 @@
 #include <QMessageBox>
 #include "kvp_keyvalueparser.h"
 #include "gpio.h"
-#include <QByteArray>
 #include <QCoreApplication>
 
 
 // The configuration file name
 #define THE_CONFIG_FILE_NAME ".config"
-
+// The maximum number of supported playlist's
+#define MAX_NBR_OF_PLAYLIST  (255)
 
 /*!
  * \brief Constructor
@@ -220,7 +220,7 @@ MainWindow::initPlayList(void)
     char playListName[100]          = {'\0'};
     uint32_t fileId                 = 0;
 
-    char* configFileP = myConfigFile.toLocal8Bit().data();
+    const char* configFileP = myConfigFile.toStdString().c_str();
     int ret = kvp_fileOpen(configFileP, &fileId, false);
     if (0 != ret) {
         // Could not open the .config file.
@@ -229,7 +229,7 @@ MainWindow::initPlayList(void)
     }
 
     KvpAttributeState status = KvpAttributeSuccess;
-    for (uint8_t nbr = 1; status == KvpAttributeSuccess; nbr++) {
+    for (uint16_t nbr = 1; nbr <= MAX_NBR_OF_PLAYLIST; nbr++) {
 
 
         sectionName[0] = '\0';
@@ -280,7 +280,7 @@ MainWindow::get_PlayList_from_name(const char* inNameP)
     char playListName[100]          = {'\0'};
 
     uint32_t fileId = 0;
-    char* configFileP = myConfigFile.toLocal8Bit().data();
+    const char* configFileP = myConfigFile.toStdString().c_str();
     int ret = kvp_fileOpen(configFileP, &fileId, false);
     if (0 != ret) {
         // Could not open the .config file.
@@ -343,7 +343,7 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
     char rfidName[100]              = {'\0'};
 
     uint32_t fileId = 0;
-    char* configFileP = myConfigFile.toLocal8Bit().data();
+    const char* configFileP = myConfigFile.toStdString().c_str();
     int ret = kvp_fileOpen(configFileP, &fileId, false);
     if (0 != ret) {
         // Could not open the .config file.
@@ -429,7 +429,7 @@ MainWindow::on_PlayList_activated(const QString &arg1)
 
 
     uint32_t fileId = 0;
-    char* configFileP = myConfigFile.toLocal8Bit().data();
+    const char* configFileP = myConfigFile.toStdString().c_str();
     ret = kvp_fileOpen(configFileP, &fileId, false);
     if (0 != ret) {
         // Could not open the .config file.
