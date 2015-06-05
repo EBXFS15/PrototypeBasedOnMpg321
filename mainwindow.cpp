@@ -10,8 +10,9 @@
 #include <QCoreApplication>
 
 
+
 // The configuration file name
-#define THE_CONFIG_FILE_NAME ".config"
+#define THE_CONFIG_FILE_NAME "/media/mp3/.config"
 // The maximum number of supported playlist's
 #define MAX_NBR_OF_PLAYLIST  (255)
 
@@ -32,7 +33,7 @@ MainWindow::MainWindow(QWidget *parent) :
     Led_2_GPIO(69),
     Led_Timeout(1000),
     Key_Timeout(100),
-    myConfigFile(QCoreApplication::applicationDirPath() + "/"THE_CONFIG_FILE_NAME)
+    myConfigFile(THE_CONFIG_FILE_NAME)
 {
     // --- Setup GPIO's for KEY's and LED's ---
     // SW1
@@ -76,6 +77,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(player,SIGNAL(playbackStarted()), this, SLOT(on_playbackStarted()));
     connect(player,SIGNAL(playbackEnded()), this, SLOT(on_playbackEnded()));
 
+    myListener = new rfidListener();
+
+    connect(myListener,SIGNAL(newTagDetected(QString)), this,SLOT(rfidTagDetected(QString)));
+
+    myListener->start();
+
+
     ui->setupUi(this);
 
     ui->statusBar->showMessage("Idle");
@@ -111,7 +119,7 @@ MainWindow::~MainWindow()
     // LED2
     gpio_clear(Led_2_GPIO);
     gpio_unexport(Led_2_GPIO);
-
+    delete myListener;
     delete player;
     delete ui;
 }
@@ -204,6 +212,21 @@ void MainWindow::playbackOnGoing(bool value){
     {
         ui->statusBar->showMessage("Idle");
     }
+}
+
+void MainWindow::rfidTagDetected(QString tagId){
+    int playListNumber = get_PlayList_from_rfid(tagId.toLocal8Bit());
+    if (playListNumber < ui->PlayList->count()){
+        player->stop();
+        ui->PlayList->setCurrentIndex(playListNumber-1);
+        on_PlayList_activated(ui->PlayList->currentText());
+        ui->statusBar->showMessage(tagId.prepend("Known TAG-Discovered: "));
+        playNext();
+    }
+    else{
+        ui->statusBar->showMessage(tagId.prepend("Unknown TAG-Discovered: "));
+    }
+    myListener->start();
 }
 
 /*!
@@ -371,7 +394,8 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
                                           rfidName,     // value
                                           100);         // length of playListName buffer
 
-        if (status == KvpAttributeSuccess) {
+        if (status == KvpAttributeSuccess) {            
+            rfidName[14] = '\0';
             int ret = strcmp(inRfidP, rfidName);
             if (0 == ret) {
                 // found

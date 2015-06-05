@@ -1,28 +1,34 @@
 #ifndef RFID_H
 #define RFID_H
 
-#include <QObject>
-#include <stdio.h>   /* Standard input/output definitions */
-#include <string.h>  /* String function definitions */
-#include <unistd.h>  /* UNIX standard function definitions */
-#include <fcntl.h>   /* File control definitions */
-#include <errno.h>   /* Error number definitions */
-#include <termios.h> /* POSIX terminal control definitions */
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-class rfid : public QObject
-{
-    Q_OBJECT
-    int serialPortFileDescriptor;
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <termios.h>
+#include <stdio.h>
+#include <string.h>
+#include <errno.h>
+#include <stdlib.h>
+#include <unistd.h>
+#define BAUDRATE B9600
+#define MODEMDEVICE "/dev/ttyO1"/*UART NAME IN PROCESSOR*/
+#define _POSIX_SOURCE 1 /* POSIX compliant source */
+#define FALSE 0
+#define TRUE 1
+#define BLANK_RFID_TAG "00000000000000\0"
 
-public:
-    explicit rfid(QObject *parent = 0);
-    ~rfid();
+void openport();
+void sendport(void);
+int readport(char rfidTag[15]);
+void closeport(void);
 
-signals:
-    void newIdReceived(QString filename);
 
-public slots:
-    void listen();
-};
+#ifdef __cplusplus
+}
+#endif
 
 #endif // RFID_H
+

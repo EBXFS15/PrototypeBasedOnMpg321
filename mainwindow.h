@@ -5,6 +5,7 @@
 #include <QListWidgetItem>
 #include <stdint.h>
 #include "mplayer.h"
+#include "rfidlistener.h"
 
 namespace Ui {
 class MainWindow;
@@ -17,6 +18,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     mplayer * player;
+    rfidListener * myListener;
     ~MainWindow();
 
 private slots:
@@ -71,6 +73,8 @@ private slots:
     bool playNext();
 
     void showMessageBoxAndClose(QString msg);
+
+    void rfidTagDetected(QString tagId);
 
 private:
     Ui::MainWindow *ui;

@@ -16,12 +16,16 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     gpio.c \
     mplayer.cpp \
-    kvp_keyvalueparser.c
+    kvp_keyvalueparser.c \
+    rfid.c \
+    rfidlistener.cpp
 
 HEADERS  += mainwindow.h \
     gpio.h \    
     mplayer.h \
-    kvp_keyvalueparser.h
+    kvp_keyvalueparser.h \
+    rfid.h \
+    rfidlistener.h
 
 FORMS    += mainwindow.ui
 
