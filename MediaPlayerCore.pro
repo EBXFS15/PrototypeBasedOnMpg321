@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = MediaPlayerCore
+TARGET = mp3player
 TEMPLATE = app
 
 
@@ -36,8 +36,14 @@ LIBS += -L/opt/embedded/bbb/rootfs/lib
 LIBS += -L/opt/embedded/bbb/rootfs/usr/lib
 LIBS += -L/opt/embedded/bbb/rootfs/usr/local/lib
 LIBS += -L/opt/embedded/bbb/rootfs/usr/local/qt-5.3/lib -lz -lpthread -lm -lqwt -lQt5Gui -lGLES_CM -lGLESv2 -lusc
-target.path = /usr/local/bin
+target.path = /opt/embedded/bbb/rootfs/usr/local/bin
+
 INSTALLS += target
 
 RESOURCES += \
     player.qrc
+
+
+DISTFILES += \
+    README.md \
+    .ebxfs15_mp3player_config

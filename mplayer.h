@@ -1,6 +1,12 @@
 #ifndef MPLAYER_H
 #define MPLAYER_H
 
+/*!
+ * \brief Building variable to switch between video support and no video support
+ * For the moment video is not supported.
+ */
+#define NO_VIDEO
+
 #include <QObject>
 #include <QProcess>
 #include <QHash>

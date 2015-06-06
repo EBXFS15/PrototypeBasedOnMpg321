@@ -8,11 +8,12 @@
 #include "kvp_keyvalueparser.h"
 #include "gpio.h"
 #include <QCoreApplication>
+#include <QDir>
 
 
 
 // The configuration file name
-#define THE_CONFIG_FILE_NAME "/media/mp3/.config"
+#define THE_CONFIG_FILE_NAME ".ebxfs15_mp3player_config"
 // The maximum number of supported playlist's
 #define MAX_NBR_OF_PLAYLIST  (255)
 
@@ -33,7 +34,7 @@ MainWindow::MainWindow(QWidget *parent) :
     Led_2_GPIO(69),
     Led_Timeout(1000),
     Key_Timeout(100),
-    myConfigFile(THE_CONFIG_FILE_NAME)
+    myConfigFile( QDir::homePath().append(QDir::separator()).append(THE_CONFIG_FILE_NAME))
 {
     // --- Setup GPIO's for KEY's and LED's ---
     // SW1
@@ -77,12 +78,17 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(player,SIGNAL(playbackStarted()), this, SLOT(on_playbackStarted()));
     connect(player,SIGNAL(playbackEnded()), this, SLOT(on_playbackEnded()));
 
-    myListener = new rfidListener();
+    uartListener = new QThread();
+    rfidListener * uartWorker = new rfidListener();
+    uartWorker->moveToThread(uartListener);
 
-    connect(myListener,SIGNAL(newTagDetected(QString)), this,SLOT(rfidTagDetected(QString)));
+    connect(uartListener,SIGNAL(started()),uartWorker,SLOT(process()));
+    connect(uartWorker,SIGNAL(newTagDetected(QString)), this,SLOT(rfidTagDetected(QString)));
+    //connect(uartWorker, SIGNAL(newTagDetected(QString)), uartListener, SLOT(quit()));
+    //connect(uartWorker, SIGNAL(newTagDetected(QString)), uartWorker, SLOT(deleteLater()));
+    //connect(uartListener, SIGNAL(finished()), uartListener, SLOT(deleteLater()));
 
-    myListener->start();
-
+    uartListener->start();
 
     ui->setupUi(this);
 
@@ -119,7 +125,10 @@ MainWindow::~MainWindow()
     // LED2
     gpio_clear(Led_2_GPIO);
     gpio_unexport(Led_2_GPIO);
-    delete myListener;
+
+
+    uartListener->terminate();
+    delete uartListener;
     delete player;
     delete ui;
 }
@@ -216,7 +225,7 @@ void MainWindow::playbackOnGoing(bool value){
 
 void MainWindow::rfidTagDetected(QString tagId){
     int playListNumber = get_PlayList_from_rfid(tagId.toLocal8Bit());
-    if (playListNumber < ui->PlayList->count()){
+    if (playListNumber <= ui->PlayList->count()){
         player->stop();
         ui->PlayList->setCurrentIndex(playListNumber-1);
         on_PlayList_activated(ui->PlayList->currentText());
@@ -226,7 +235,8 @@ void MainWindow::rfidTagDetected(QString tagId){
     else{
         ui->statusBar->showMessage(tagId.prepend("Unknown TAG-Discovered: "));
     }
-    myListener->start();
+    uartListener->quit();
+    uartListener->start();
 }
 
 /*!
@@ -247,7 +257,7 @@ MainWindow::initPlayList(void)
     int ret = kvp_fileOpen(configFileP, &fileId, false);
     if (0 != ret) {
         // Could not open the .config file.
-        showMessageBoxAndClose("Cannot open config file! The application will be closed.");
+        showMessageBoxAndClose("Cannot open config file! The application will be closed.\n" + myConfigFile);
         return;
     }
 
@@ -472,10 +482,7 @@ MainWindow::on_PlayList_activated(const QString &arg1)
                                       imageName,   // value
                                       100);        // length of songName buffer
 
-    QImage imageObject;
-    imageObject.load(imageName);
-    QImage scaled = imageObject.scaled(ui->mediaImage->minimumWidth(),ui->mediaImage->minimumHeight());
-    ui->mediaImage->setPixmap(QPixmap::fromImage(scaled));
+    loadCover(imageName);
 
     // set status to allow add files to the file list even the above image could not be found
     status = KvpAttributeSuccess;
@@ -524,20 +531,33 @@ MainWindow::showMessageBoxAndClose(QString msg)
    ui->btn_close->click();
 }
 
-void
-MainWindow::on_FileList_itemClicked(QListWidgetItem *item)
-{
+void MainWindow::loadCoverThroughFfmpeg(QString path){
     QProcess ffmpegProcess;
     QStringList par;
-    par << "-i" << item->text() << "cover.jpg";
+    par << "-i" << path << "cover.jpg";
     ffmpegProcess.start("ffmpeg",par);
     ffmpegProcess.closeWriteChannel();
     ffmpegProcess.waitForFinished();
     QImage imageObject;
-    imageObject.load("cover.jpg");
-    QImage scaled = imageObject.scaled(ui->mediaImage->minimumWidth(),ui->mediaImage->minimumHeight());
-    ui->mediaImage->setPixmap(QPixmap::fromImage(scaled));
+    loadCover("cover.jpg");
+}
 
+void MainWindow::loadCover(QString path){
+    QFileInfo file(path);
+    if (file.exists()){
+        QImage imageObject;
+        imageObject.load(path);
+        QImage scaled = imageObject.scaled(ui->mediaImage->minimumWidth(),ui->mediaImage->minimumHeight());
+        ui->mediaImage->setPixmap(QPixmap::fromImage(scaled));
+    }
+    else{
+        ui->mediaImage->setPixmap(ui->btn_play->icon().pixmap(ui->mediaImage->minimumWidth(),ui->mediaImage->minimumHeight()));
+    }
+}
+
+void
+MainWindow::on_FileList_itemClicked(QListWidgetItem *item)
+{      
     player->loadFile(item->text());
     player->play();
 } // MainWindow::on_FileList_itemClicked
@@ -670,3 +690,8 @@ MainWindow::on_volumeSlider_valueChanged(int value)
 }
 
 
+
+void MainWindow::on_PlayList_activated(int index)
+{
+
+}

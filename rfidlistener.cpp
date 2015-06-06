@@ -7,11 +7,11 @@ rfidListener::rfidListener()
 }
 
 rfidListener::~rfidListener()
-{
+{    
     closeport();
 }
 
-void rfidListener::run(){
+void rfidListener::process(){
 
     char rfidBuff[16]=BLANK_RFID_TAG;
 

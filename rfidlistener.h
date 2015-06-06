@@ -4,18 +4,20 @@
 #include <QThread>
 #include "rfid.h"
 
-class rfidListener : public QThread
+class rfidListener : public QObject
 {
     Q_OBJECT
 
-
 public:    
     rfidListener();
-    void run();
     ~rfidListener();
+
+public slots:
+    void process();
 
 signals:
     void newTagDetected(QString tagId);
+
 };
 
 #endif // RFIDLISTENER_H

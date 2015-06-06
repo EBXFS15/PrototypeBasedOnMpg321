@@ -18,7 +18,7 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     mplayer * player;
-    rfidListener * myListener;
+    QThread * uartListener;
     ~MainWindow();
 
 private slots:
@@ -75,6 +75,11 @@ private slots:
     void showMessageBoxAndClose(QString msg);
 
     void rfidTagDetected(QString tagId);
+
+    void on_PlayList_activated(int index);
+
+    void loadCover(QString path);
+    void loadCoverThroughFfmpeg(QString path);
 
 private:
     Ui::MainWindow *ui;

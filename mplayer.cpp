@@ -45,10 +45,15 @@ void mplayer::startProcess(int winId)
   */
 QStringList arguments;
 arguments << "-slave";
-//arguments << "-novideo";
-arguments << "-vf" << "expand=1024:768";
-arguments << "-vo" << "fbdev";
-//arguments << "-wid" << QString::number(winId);
+#ifdef NO_VIDEO
+    arguments << "-novideo";
+#else
+    arguments << "-vf" << "expand=1024:768";
+    arguments << "-vo" << "fbdev";
+#endif
+if (winId != 0){
+    arguments << "-wid" << QString(winId);
+}
 arguments << "-input" << "nodefault-bindings";
 arguments << "-really-quiet" << "1";
 arguments << "-msglevel" << "statusline=6";
