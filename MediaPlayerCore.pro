@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = mp3player
+TARGET = musicplayer
 TEMPLATE = app
 
 
@@ -46,4 +46,4 @@ RESOURCES += \
 
 DISTFILES += \
     README.md \
-    .ebxfs15_mp3player_config
+    .ebxfs15_musicplayer_config

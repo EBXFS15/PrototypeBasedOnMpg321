@@ -7,16 +7,20 @@ To build on the development system run following commands:
     $ /opt/embedded/bbb/rootfs/usr/local/qt-5.3/bin/qmake
     $ make
 
-Installation:
-    $ sudo cp ./mp3player /opt/embedded/bbb/rootfs/usr/local/bin/mp3player
-    $ sudo cp ./.ebxfs15_mp3player_config /opt/embedded/bbb/rootfs/root/.ebxfs15_mp3player_config
+Installation on EBX beaglebone:
+    $ sudo cp ./musicplayer /opt/embedded/bbb/rootfs/usr/local/bin/musicplayer
 
-Start application:
-    $ mp3player
+Create initial configuration file for root user on EBX beaglebone:
+    $ sudo cp ./.ebxfs15_musicplayer_config /opt/embedded/bbb/rootfs/root/.ebxfs15_musicplayer_config
+
+Create initial configuration file for debian user on EBX beaglebone:
+    $ sudo cp ./.ebxfs15_musicplayer_config /opt/embedded/bbb/rootfs/home/debian/.ebxfs15_musicplayer_config
+
+Create initial configuration file for any user on EBX beaglebone:
+    $ sudo cp ./.ebxfs15_musicplayer_config /opt/embedded/bbb/rootfs/home/"useraccount-to-be-defined"/.ebxfs15_musicplayer_config
 
 
-
-Textfile ${HOME}/.ebxfs15_mp3player_config contains the configuration. Please see example in the repository or the one below.
+Configfile ${HOME}/.ebxfs15_musicplayer_config contains the configuration. Please see example in the repository or the one below.
 
     [PlayList1]
     name=Default
@@ -46,3 +50,8 @@ http://www.rfid-webshop.com/shop/download/Reader/HF%2013.56%20MHz/ACG/ISO%201444
         - listens on the port /dev/ttyO1.
         - listens in ablocking manner to avoid polling.
 
+    For testing purpose you may sen the tag-id through minicom or a similar aplication.
+
+
+Start application:
+    $ musicplayer

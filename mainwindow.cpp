@@ -13,7 +13,7 @@
 
 
 // The configuration file name
-#define THE_CONFIG_FILE_NAME ".ebxfs15_mp3player_config"
+#define THE_CONFIG_FILE_NAME ".ebxfs15_musicplayer_config"
 // The maximum number of supported playlist's
 #define MAX_NBR_OF_PLAYLIST  (255)
 
@@ -258,6 +258,8 @@ MainWindow::initPlayList(void)
     if (0 != ret) {
         // Could not open the .config file.
         showMessageBoxAndClose("Cannot open config file! The application will be closed.\n" + myConfigFile);
+        this->hide();
+        this->deleteLater();
         return;
     }
 
