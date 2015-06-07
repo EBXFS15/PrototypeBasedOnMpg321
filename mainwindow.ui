@@ -83,8 +83,20 @@
                      <height>450</height>
                     </size>
                    </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>450</width>
+                     <height>450</height>
+                    </size>
+                   </property>
                    <property name="text">
-                    <string>TextLabel</string>
+                    <string/>
+                   </property>
+                   <property name="pixmap">
+                    <pixmap resource="player.qrc">:/icons/Resources/icons/logo.png</pixmap>
+                   </property>
+                   <property name="scaledContents">
+                    <bool>false</bool>
                    </property>
                   </widget>
                  </item>

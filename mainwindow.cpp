@@ -226,6 +226,7 @@ void MainWindow::playbackOnGoing(bool value){
 void MainWindow::rfidTagDetected(QString tagId){
     int playListNumber = get_PlayList_from_rfid(tagId.toLocal8Bit());
     if (playListNumber <= ui->PlayList->count()){
+        playbackOnGoing(false);
         player->stop();
         ui->PlayList->setCurrentIndex(playListNumber-1);
         on_PlayList_activated(ui->PlayList->currentText());
@@ -552,8 +553,10 @@ void MainWindow::loadCover(QString path){
         QImage scaled = imageObject.scaled(ui->mediaImage->minimumWidth(),ui->mediaImage->minimumHeight());
         ui->mediaImage->setPixmap(QPixmap::fromImage(scaled));
     }
-    else{
-        ui->mediaImage->setPixmap(ui->btn_play->icon().pixmap(ui->mediaImage->minimumWidth(),ui->mediaImage->minimumHeight()));
+    else{                
+        QImage imageObject(":/icons/Resources/icons/logo.png");
+        QImage scaled = imageObject.scaled(ui->mediaImage->minimumWidth(),ui->mediaImage->minimumHeight());
+        ui->mediaImage->setPixmap(QPixmap::fromImage(scaled));
     }
 }
 

@@ -8,5 +8,6 @@
         <file alias="quit">Resources/icons/media-playback-quit.png</file>
         <file>Resources/icons/grey_sliderLeft.png</file>
         <file>Resources/icons/grey_sliderVertical.png</file>
+        <file>Resources/icons/logo.png</file>
     </qresource>
 </RCC>

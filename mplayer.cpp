@@ -215,6 +215,7 @@ void mplayer::play(){
     if(!fileExists(currentFile))
     {
         emit statusChanged("Error: file does not exist");
+        emit playbackEnded();
         return;
     }
 
