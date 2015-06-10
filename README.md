@@ -6,10 +6,10 @@ System requirements:
 - Optional: RF id reader MILFARE OMNIKEY(R) 5513 Reader Board Compact for basic playlist control through UART.
   Check below for an explanation how to emulate the RF id reader.
 
-To build on the development system follow this procedure (may also be done with QT):
-    $ git clone https://github.com/EBXFS15/musicplayer.git
-    $ /opt/embedded/bbb/rootfs/usr/local/qt-5.3/bin/qmake
-    $ make
+To build on the development system follow this procedure (may also be done with QT): <br/>
+<br/>$ git clone https://github.com/EBXFS15/musicplayer.git
+<br/>$ /opt/embedded/bbb/rootfs/usr/local/qt-5.3/bin/qmake
+<br/>$ make
 
 Modification of the default EBX build:
     Edit uEnv.txt in the boot partition of the SD cart:
@@ -19,17 +19,17 @@ Modification of the default EBX build:
     - Boot with the new uEnv.txt
 
 Installation on EBX beaglebone:
-    $ sudo cp ./musicplayer /opt/embedded/bbb/rootfs/usr/local/bin/musicplayer
+<br/>$ sudo cp ./musicplayer /opt/embedded/bbb/rootfs/usr/local/bin/musicplayer
 
 Configuration file
   Create initial configuration file for root user on EBX beaglebone:
-    $ sudo cp ./.ebxfs15_musicplayer_config /opt/embedded/bbb/rootfs/root/.ebxfs15_musicplayer_config
+<br/>$ sudo cp ./.ebxfs15_musicplayer_config /opt/embedded/bbb/rootfs/root/.ebxfs15_musicplayer_config
 
   And/or create initial configuration file for debian user on EBX beaglebone:
-    $ sudo cp ./.ebxfs15_musicplayer_config /opt/embedded/bbb/rootfs/home/debian/.ebxfs15_musicplayer_config
+<br/>$ sudo cp ./.ebxfs15_musicplayer_config /opt/embedded/bbb/rootfs/home/debian/.ebxfs15_musicplayer_config
 
   And/or create initial configuration file for any user on EBX beaglebone:
-    $ sudo cp ./.ebxfs15_musicplayer_config /opt/embedded/bbb/rootfs/home/>>useraccount-to-be-defined-here<</.ebxfs15_musicplayer_config
+<br/>$ sudo cp ./.ebxfs15_musicplayer_config /opt/embedded/bbb/rootfs/home/>>useraccount-to-be-defined-here<</.ebxfs15_musicplayer_config
 
   The file ${HOME}/.ebxfs15_musicplayer_config contains the configuration. Please see example in the repository or the one below.
     # This example playlist lists files available in the default distribution EBX FS 2015 (see Lab-1.1_Embedded_Linux_Configuration.pdf).
@@ -82,14 +82,14 @@ RFID
 
         As alternative you can use the shell to send the TAG-ID with echo > /dev/ttyUSB0:
         Configuration of output port:
-        $ stty -F /dev/ttyUSB0 9600 cs8 -parenb -cstopb
+    <br/>$ stty -F /dev/ttyUSB0 9600 cs8 -parenb -cstopb
 
         Send TAG-ID:
-        $ echo TAG-ID > /dev/ttyUSB0
+    <br/>$ echo TAG-ID > /dev/ttyUSB0
 
         Example:
-        $ echo 04CA293A5C2B80 > /dev/ttyUSB0
+    <br/>$ echo 04CA293A5C2B80 > /dev/ttyUSB0
 
 
 How to start the application:
-    $ musicplayer
+<br/>$ musicplayer
