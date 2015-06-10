@@ -16,7 +16,7 @@ Modification of the default EBX build:
     - Change line 3 as follows (redirection of debug console to avoid any conflict):
       old: serial_console=ttyO1,115200n8
       new: serial_console=ttyO2,115200n8
-    - Boot with the new uEnv.txt
+    - Boot/Reboot with the new uEnv.txt
 
 Installation on EBX beaglebone:
 <br/>$ sudo cp ./musicplayer /opt/embedded/bbb/rootfs/usr/local/bin/musicplayer
