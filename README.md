@@ -6,7 +6,7 @@ System requirements:
 - Optional: RF id reader MILFARE OMNIKEY(R) 5513 Reader Board Compact for basic playlist control through UART.
   Check below for an explanation how to emulate the RF id reader.
 
-To build on the development system follow this procedure (may also be done with QT): <br/>
+To build on the development system follow this procedure (may also be done with QT):
 <br/>$ git clone https://github.com/EBXFS15/musicplayer.git
 <br/>$ /opt/embedded/bbb/rootfs/usr/local/qt-5.3/bin/qmake
 <br/>$ make
