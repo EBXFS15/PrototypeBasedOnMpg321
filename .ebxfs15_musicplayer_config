@@ -13,6 +13,12 @@ rfid=04CA293A5C2B80
 path1=/usr/local/music/BruceSpringsteen_JonBonJovi.mp3
 
 [PlayList3]
+name=Damien
+image=/media/mp3/bonjovi.jpg
+rfid=04C5E13A5C2B81
+path1=/usr/local/music/Guns.wav
+
+[PlayList4]
 name=Cedric
 image=/media/mp3/bonjovi.jpg
 rfid=04C5E13A5C2B80

@@ -13,9 +13,18 @@ public:
     ~rfidListener();
 
 public slots:
+    /*!
+     * \brief Reads form the UART in a blocking manner.
+     */
     void process();
 
 signals:
+    /*!
+     * \brief signalization if a new tag was discovered.
+     * last discovered tag does not issue a signal.
+     * \param tagId TAG-ID of the newly discovered tag.
+     *
+     */
     void newTagDetected(QString tagId);
 
 };

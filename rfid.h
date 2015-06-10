@@ -13,16 +13,42 @@ extern "C" {
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
-#define BAUDRATE B9600
-#define MODEMDEVICE "/dev/ttyO1"/*UART NAME IN PROCESSOR*/
-#define _POSIX_SOURCE 1 /* POSIX compliant source */
+
 #define FALSE 0
 #define TRUE 1
+
+/*!
+ * \brief Baudrate the RFID reader is using by default.
+ */
+#define BAUDRATE B9600
+
+/*!
+ * \brief Port where the RFID reader is connected to.
+ */
+#define MODEMDEVICE "/dev/ttyO1"
+
+/*!
+ * \brief Initial tag id for detection.
+ * TAG-ID that is unexpected to be used. To be checked based on the used tags.
+ */
 #define BLANK_RFID_TAG "00000000000000\0"
 
+
+/*!
+ * \brief open the serial port
+ * Very simple implementation to access the UART port.
+ */
 void openport();
-void sendport(void);
+/*!
+ * \brief read from port in a blocking manner.
+ *
+ * \param rfidTag character array where the reseived string shall be stored in.
+ */
 int readport(char rfidTag[15]);
+/*!
+ * \brief closes the serial port
+ *
+ */
 void closeport(void);
 
 
