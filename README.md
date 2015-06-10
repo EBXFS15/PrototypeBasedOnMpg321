@@ -62,7 +62,7 @@ Configuration file
 
 
 RFID
-    Used RFID reader is a MILFARE OMNIKEY(R) 5513 Reader Board Compact.
+    Used RFID reader is a MILFARE OMNIKEY(R) 5513 Reader Board Compact.<br/>
     http://www.rfid-webshop.com/shop/download/Reader/HF%2013.56%20MHz/ACG/ISO%2014443/TAGnology_Datasheet_OK5513_RB_Compact_V1_0_0502.pdf
 
     The reader is preconfigured to send only a string with the detected tag id through RS232.
@@ -82,13 +82,13 @@ RFID
 
         As alternative you can use the shell to send the TAG-ID with echo > /dev/ttyUSB0:
         Configuration of output port:
-    <br/>$ stty -F /dev/ttyUSB0 9600 cs8 -parenb -cstopb
+        $ stty -F /dev/ttyUSB0 9600 cs8 -parenb -cstopb
 
         Send TAG-ID:
-    <br/>$ echo TAG-ID > /dev/ttyUSB0
+        $ echo TAG-ID > /dev/ttyUSB0
 
         Example:
-    <br/>$ echo 04CA293A5C2B80 > /dev/ttyUSB0
+        $ echo 04CA293A5C2B80 > /dev/ttyUSB0
 
 
 How to start the application:
