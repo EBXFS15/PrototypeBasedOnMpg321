@@ -43,6 +43,11 @@ void gpio_setToInput(const int inGpioNumber);
  */
 void gpio_set(const int inGpioNumber);
 /**
+ * Sends a max speed burst to the GPIO.
+ * @param [in] inGpioNumber: GPIO number that has to be set.
+ */
+void gpio_burst(const int inGpioNumber);
+/**
  * Gets the GPIO value.
  * @param [in]  inGpioNumber: GPIO number to get the value from.
  * @param [out] outValueP: Pointer to write the returned value to.

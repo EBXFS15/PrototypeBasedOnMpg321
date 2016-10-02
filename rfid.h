@@ -25,13 +25,15 @@ extern "C" {
 /*!
  * \brief Port where the RFID reader is connected to.
  */
-#define MODEMDEVICE "/dev/ttyO1"
+#define MODEMDEVICE "/dev/ttyO0"
 
 /*!
  * \brief Initial tag id for detection.
  * TAG-ID that is unexpected to be used. To be checked based on the used tags.
  */
-#define BLANK_RFID_TAG "00000000000000\0"
+#define BLANK_RFID_TAG "00000000000000\n"
+#define RFID_SIZE 15
+#define RFID_LEN  14
 
 
 /*!

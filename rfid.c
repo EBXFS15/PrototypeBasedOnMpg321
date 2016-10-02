@@ -21,22 +21,27 @@ char sendcmd1[10]="\0";
 FILE *file;
 
 
-int readport(char rfidTag[15])
+int readport(char rfidTag[RFID_SIZE])
 {
-    static char internalRfidTag[15]=BLANK_RFID_TAG;
-    static char tempRfidTag[15]    =BLANK_RFID_TAG;
+    static char internalRfidTag[RFID_SIZE]=BLANK_RFID_TAG;
+    static char tempRfidTag[RFID_SIZE]    =BLANK_RFID_TAG;
+    char singleCharacter ='0';
     while (fd!=0){
-        read(fd,tempRfidTag, sizeof(tempRfidTag));
-        tempRfidTag[14] = '\0';
-        if(tempRfidTag[0] == '\n'){
-            tempRfidTag[0] = '0';
+        int msgLen = 0;
+        read(fd, &singleCharacter, 1);
+        //tempRfidTag[msgLen++] = singleCharacter;
+        while((singleCharacter != '\n') && (msgLen < RFID_SIZE)){
+            tempRfidTag[msgLen++] = singleCharacter;
+            read(fd,&singleCharacter, 1);
         }
-        if (strcmp(tempRfidTag,internalRfidTag) != 0){
-            //printf("New Tag: %s\n", tempRfidTag);
+        tempRfidTag[RFID_LEN] = '\0';
+        if ((strcmp(tempRfidTag,internalRfidTag) != 0) && (msgLen == RFID_LEN)){
+            printf("New Tag: %s\n", tempRfidTag);
             strcpy(internalRfidTag, tempRfidTag);
             strcpy(rfidTag, tempRfidTag);
             return 1;
         }
+        //printf("New Tag: %s\n", tempRfidTag);
     }
     return 0;
 }

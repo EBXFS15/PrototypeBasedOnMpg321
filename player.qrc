@@ -9,5 +9,6 @@
         <file>Resources/icons/grey_sliderLeft.png</file>
         <file>Resources/icons/grey_sliderVertical.png</file>
         <file>Resources/icons/logo.png</file>
+        <file>Resources/icons/media-playback-cd.png</file>
     </qresource>
 </RCC>

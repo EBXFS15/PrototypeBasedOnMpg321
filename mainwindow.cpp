@@ -11,12 +11,11 @@
 #include <QDir>
 
 
-
 // The configuration file name
 #define THE_CONFIG_FILE_NAME ".ebxfs15_musicplayer_config"
 // The maximum number of supported playlist's
 #define MAX_NBR_OF_PLAYLIST  (255)
-
+#define PLAY_VOLUME 100
 /*!
  * \brief Constructor
  *
@@ -33,10 +32,21 @@ MainWindow::MainWindow(QWidget *parent) :
     Led_1_GPIO(68),
     Led_2_GPIO(69),
     Led_Timeout(1000),
-    Key_Timeout(100),
+    Key_Timeout(180),
     myConfigFile( QDir::homePath().append(QDir::separator()).append(THE_CONFIG_FILE_NAME))
-{
+{     
+
     // --- Setup GPIO's for KEY's and LED's ---
+    // LED 1
+    gpio_export(Led_1_GPIO);
+    gpio_setToOutput(Led_1_GPIO);
+    // LED 2
+    gpio_export(Led_2_GPIO);
+    gpio_setToOutput(Led_2_GPIO);
+
+    // Turn on AMPLIFIER
+    gpio_set(Led_1_GPIO);
+
     // SW1
     gpio_export(Key_SW1_GPIO);
     gpio_setToInput(Key_SW1_GPIO);
@@ -53,12 +63,7 @@ MainWindow::MainWindow(QWidget *parent) :
     gpio_export(Key_SW5_GPIO);
     gpio_setToInput(Key_SW5_GPIO);
 
-    // LED 1
-    gpio_export(Led_1_GPIO);
-    gpio_setToOutput(Led_1_GPIO);
-    // LED 2
-    gpio_export(Led_2_GPIO);
-    gpio_setToOutput(Led_2_GPIO);
+
 
     // --- Set and start LED timer ---
     QTimer *timer_LED = new QTimer(this);
@@ -88,14 +93,20 @@ MainWindow::MainWindow(QWidget *parent) :
     //connect(uartWorker, SIGNAL(newTagDetected(QString)), uartWorker, SLOT(deleteLater()));
     //connect(uartListener, SIGNAL(finished()), uartListener, SLOT(deleteLater()));
 
-    uartListener->start();
+    uartListener->start();    
 
     ui->setupUi(this);
-
+    player->setVolume(ui->volumeSlider->value());
     ui->statusBar->showMessage("Idle");
 
+    // --- Start PA Alimentation ---
+
+
+
+    //gpio_burst(Led_1_GPIO);
     // --- Initialise the play lists from .config file ---
-    initPlayList();
+    initPlayList();        
+    grabGesture(Qt::SwipeGesture);
 }
 
 /*!
@@ -106,7 +117,8 @@ MainWindow::MainWindow(QWidget *parent) :
 MainWindow::~MainWindow()
 {
     /** Cedric: TODO: Move this to ~MainWindow()
-     */
+     */    
+
     // --- Free GIO resources ---
     // SW1
     gpio_unexport(Key_SW1_GPIO);
@@ -158,13 +170,29 @@ bool MainWindow::playNext()
     }
 }
 
+
+/*!
+ * \brief Play next media file in the current playlist
+ */
+bool MainWindow::playPrevious()
+{
+    if ((ui->FileList->currentRow()-1) >= 0){
+        ui->FileList->setCurrentRow(ui->FileList->currentRow()-1);
+        ui->FileList->itemClicked(ui->FileList->currentItem());
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
 void MainWindow::on_btn_play_pressed()
 {
     if(ui->FileList->currentRow() < 0){
-        playNext();
+        playNext();        
     }
     else{
-        player->play();
+        player->play();                
     }
 }
 
@@ -176,12 +204,12 @@ void MainWindow::on_btn_stop_pressed()
 
 void MainWindow::on_btn_ff_pressed()
 {
-    player->ff(100);
+    playNext();
 }
 
 void MainWindow::on_btn_RW_pressed()
 {
-    player->rw(100);
+    playPrevious();
 }
 
 void MainWindow::on_btn_close_pressed()
@@ -236,6 +264,7 @@ void MainWindow::rfidTagDetected(QString tagId){
     else{
         ui->statusBar->showMessage(tagId.prepend("Unknown TAG-Discovered: "));
     }
+
     uartListener->quit();
     uartListener->start();
 }
@@ -435,7 +464,7 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
 void
 MainWindow::on_PlayList_activated(const QString &arg1)
 {
-    ui->FileList->clear();
+    ui->FileList->clear();    
 
      // copy the name of the playList for further treatment
     const char* tmpP    = arg1.toStdString().c_str();
@@ -531,7 +560,7 @@ MainWindow::showMessageBoxAndClose(QString msg)
    box.setText(msg);
    box.setStandardButtons(QMessageBox::Ok);
    box.exec();
-   ui->btn_close->click();
+   this->close();
 }
 
 void MainWindow::loadCoverThroughFfmpeg(QString path){
@@ -567,18 +596,101 @@ MainWindow::on_FileList_itemClicked(QListWidgetItem *item)
     player->play();
 } // MainWindow::on_FileList_itemClicked
 
+#define IR_STATE_MUTE 7
+#define IR_STATE_START IR_STATE_MUTE + 1
+#define IR_STATE_PREPARE_SET_IN    IR_STATE_MUTE - 1
+#define IR_STATE_SET_AM    IR_STATE_PREPARE_SET_IN - 1
+#define IR_STATE_SET_AUX   IR_STATE_SET_AM - 1
+#define IR_STATE_UNMUTE IR_STATE_SET_AUX - 4
+
 void
 MainWindow::timeout_LED(void)
 {
     static unsigned short x = 0;
+    static unsigned short irTimeout = 8;
+    QByteArray data;
+    QFile file("/dev/jvc-remote");
     x++;
     if (x % 2) {
-      gpio_set(Led_1_GPIO);
-      gpio_clear(Led_2_GPIO);
-    } else {
-      gpio_clear(Led_1_GPIO);
       gpio_set(Led_2_GPIO);
+    } else {
+      gpio_clear(Led_2_GPIO);
     }
+    if(irTimeout == IR_STATE_MUTE)
+    {
+        int i = 0;
+
+        //Mute
+        data.clear();
+        data.append(0x47);
+        data.append(0x05);
+        for(i = 0 ; i< 20;i++)
+        {
+            file.open(QIODevice::WriteOnly);
+            file.write(data);
+            file.close();
+        }
+        irTimeout--;
+    }
+    if(irTimeout == IR_STATE_PREPARE_SET_IN)
+    {
+        //Set to AUX
+        data.clear();
+        data.append(0x47);
+        data.append(0x08);
+        file.open(QIODevice::WriteOnly);
+        file.write(data);
+        file.close();
+        irTimeout--;
+    }
+    if(irTimeout == IR_STATE_SET_AM)
+    {
+        //Set to AUX
+        data.clear();
+        data.append(0x47);
+        data.append(0x08);
+        file.open(QIODevice::WriteOnly);
+        file.write(data);
+        file.close();
+        irTimeout--;
+    }
+
+    if(irTimeout == IR_STATE_SET_AUX)
+    {
+        int i = 0;
+
+        //Set to AUX
+        data.clear();
+        data.append(0x47);
+        data.append(0x08);
+        file.open(QIODevice::WriteOnly);
+        file.write(data);
+        file.close();
+
+        irTimeout--;
+    }
+    if(irTimeout == IR_STATE_UNMUTE)
+    {
+        int i = 0;
+        // UnMute
+        data.clear();
+        data.append(0x47);
+        data.append(0x04);
+        for(i = 0 ; i< 16;i++)
+        {
+            file.open(QIODevice::WriteOnly);
+            file.write(data);
+            file.close();
+        }
+
+        irTimeout--;
+    }
+    if(irTimeout > IR_STATE_UNMUTE)
+    {
+        irTimeout--;
+    }
+
+
 } // MainWindow::timeout_LED
 
 void
@@ -670,7 +782,7 @@ MainWindow::timeout_KEY(void)
     gpio_get(Key_SW5_GPIO, &key);
     if ((0 == key) && (false == isSw5Pressed)) {
         // SW1 pressed
-        ui->btn_close->click();
+        ui->btn_play->pressed();
         isSw5Pressed = true;
     } else {
         // Wait for key released
@@ -699,4 +811,50 @@ MainWindow::on_volumeSlider_valueChanged(int value)
 void MainWindow::on_PlayList_activated(int index)
 {
 
+}
+
+bool MainWindow::event(QEvent *event)
+{
+    if (event->type() == QEvent::Gesture)
+        return gestureEvent(static_cast<QGestureEvent*>(event));
+    return QWidget::event(event);
+}
+
+bool MainWindow::gestureEvent(QGestureEvent *event)
+{
+    if (QGesture *swipe = event->gesture(Qt::SwipeGesture))
+        swipeTriggered(static_cast<QSwipeGesture *>(swipe));
+    return true;
+}
+
+void MainWindow::swipeTriggered(QSwipeGesture *gesture)
+{
+    if (gesture->state() == Qt::GestureFinished) {
+        if (gesture->horizontalDirection() == QSwipeGesture::Left
+            || gesture->verticalDirection() == QSwipeGesture::Up) {
+
+                playNext();
+            //goPrevImage();
+        } else {
+                playPrevious();
+            //goNextImage();
+        }
+        update();
+    }
+}
+void MainWindow::on_btn_cd_pressed()
+{
+    QByteArray data;
+    QFile file("/dev/jvc-remote");
+    int i;
+    //Mute
+    data.clear();
+    data.append(0x47);
+    data.append(0x05);
+    for(i = 0 ; i< 25;i++)
+    {
+        file.open(QIODevice::WriteOnly);
+        file.write(data);
+        file.close();
+    }
 }

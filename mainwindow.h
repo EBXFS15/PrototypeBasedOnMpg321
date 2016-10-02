@@ -3,6 +3,8 @@
 
 #include <QMainWindow>
 #include <QListWidgetItem>
+#include <QSwipeGesture>
+#include <QGestureEvent>
 #include <stdint.h>
 #include "mplayer.h"
 #include "rfidlistener.h"
@@ -20,6 +22,8 @@ public:
     mplayer * player;
     QThread * uartListener;
     ~MainWindow();
+protected:
+    bool event(QEvent *event);
 
 private slots:
     void on_btn_play_pressed();
@@ -66,11 +70,12 @@ private slots:
     // The method checks for a pressed key and invokes the appropriate function.
     void timeout_KEY(void);
 
-    void on_volumeSlider_valueChanged(int value);
+    void on_volumeSlider_valueChanged(int value); 
 
     void playbackOnGoing(bool value);
 
     bool playNext();
+    bool playPrevious();
 
     void showMessageBoxAndClose(QString msg);
 
@@ -80,6 +85,8 @@ private slots:
 
     void loadCover(QString path);
     void loadCoverThroughFfmpeg(QString path);
+
+    void on_btn_cd_pressed();
 
 private:
     Ui::MainWindow *ui;
@@ -105,6 +112,8 @@ private:
 
     // The absoulte path/file name of the config file
     const QString myConfigFile;
+    void swipeTriggered(QSwipeGesture*);
+    bool gestureEvent(QGestureEvent *event);
 };
 
 #endif // MAINWINDOW_H

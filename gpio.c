@@ -91,6 +91,33 @@ gpio_set(const int inGpioNumber)
 }
 
 void
+gpio_burst(const int inGpioNumber)
+{
+  char valuePath[100];
+  char high = 1;
+  char i = 0;
+  sprintf(valuePath, "/sys/class/gpio/gpio%d/value", inGpioNumber);
+  FILE* valueP = fopen(valuePath,"w");;
+  for (i = 0; i < 1; i++)
+  {
+    valueP = fopen(valuePath,"w");
+    if (high==0)
+    {
+        high = 1;
+        fprintf(valueP, '1');
+    }
+    else
+    {
+        high = 0;
+        fprintf(valueP, '0');
+    }
+    fclose(valueP);
+  }
+}
+
+
+
+void
 gpio_get(const int inGpioNumber, int* outValueP)
 {
   char valuePath[100];

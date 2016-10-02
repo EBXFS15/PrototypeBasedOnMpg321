@@ -36,7 +36,7 @@ LIBS += -L/opt/embedded/bbb/rootfs/lib
 LIBS += -L/opt/embedded/bbb/rootfs/usr/lib
 LIBS += -L/opt/embedded/bbb/rootfs/usr/local/lib
 LIBS += -L/opt/embedded/bbb/rootfs/usr/local/qt-5.3/lib -lz -lpthread -lm -lqwt -lQt5Gui -lGLES_CM -lGLESv2 -lusc
-target.path = /opt/embedded/bbb/rootfs/usr/local/bin
+target.path = /usr/local/bin
 
 INSTALLS += target
 

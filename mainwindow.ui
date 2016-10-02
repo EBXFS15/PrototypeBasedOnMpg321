@@ -20,7 +20,7 @@
       <x>0</x>
       <y>0</y>
       <width>1021</width>
-      <height>547</height>
+      <height>559</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -47,29 +47,31 @@
                 <widget class="QComboBox" name="PlayList">
                  <property name="minimumSize">
                   <size>
-                   <width>0</width>
-                   <height>50</height>
-                  </size>
-                 </property>
-                 <property name="maximumSize">
-                  <size>
                    <width>300</width>
-                   <height>16777215</height>
+                   <height>50</height>
                   </size>
                  </property>
                  <property name="font">
                   <font>
-                   <pointsize>14</pointsize>
+                   <pointsize>20</pointsize>
                   </font>
                  </property>
                  <property name="styleSheet">
-                  <string notr="true"/>
+                  <string notr="true">QScrollBar:vertical {
+border-radius: 8px;
+background: gray;
+width: 48px;
+margin: 0px 0px 0px 0px;
+}</string>
                  </property>
                  <property name="iconSize">
                   <size>
-                   <width>80</width>
-                   <height>80</height>
+                   <width>100</width>
+                   <height>100</height>
                   </size>
+                 </property>
+                 <property name="frame">
+                  <bool>true</bool>
                  </property>
                 </widget>
                </item>
@@ -89,6 +91,15 @@
                      <height>450</height>
                     </size>
                    </property>
+                   <property name="cursor">
+                    <cursorShape>ArrowCursor</cursorShape>
+                   </property>
+                   <property name="mouseTracking">
+                    <bool>false</bool>
+                   </property>
+                   <property name="acceptDrops">
+                    <bool>false</bool>
+                   </property>
                    <property name="text">
                     <string/>
                    </property>
@@ -105,7 +116,7 @@
                    <property name="maximumSize">
                     <size>
                      <width>16777215</width>
-                     <height>16777215</height>
+                     <height>430</height>
                     </size>
                    </property>
                    <property name="font">
@@ -118,15 +129,21 @@
                  <item>
                   <widget class="QSlider" name="volumeSlider">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Maximum">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
                    </property>
                    <property name="minimumSize">
                     <size>
-                     <width>60</width>
-                     <height>222</height>
+                     <width>80</width>
+                     <height>450</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>445</height>
                     </size>
                    </property>
                    <property name="mouseTracking">
@@ -135,22 +152,43 @@
                    <property name="styleSheet">
                     <string notr="true">QSlider::groove:vertical 
 {
-	image: url(:/icons/Resources/icons/grey_sliderVertical.png);
+	background: silver;
+	border: 2px solid grey;
+	height: 430px;
+	width:70px;
+	margin: 10px 5px 10px 5px;
 }
 QSlider::handle:vertical 
 {
 	image: url(:/icons/Resources/icons/grey_sliderLeft.png);
-}
-</string>
+}</string>
+                   </property>
+                   <property name="minimum">
+                    <number>30</number>
                    </property>
                    <property name="maximum">
-                    <number>200</number>
+                    <number>100</number>
+                   </property>
+                   <property name="pageStep">
+                    <number>2</number>
                    </property>
                    <property name="value">
                     <number>100</number>
                    </property>
+                   <property name="sliderPosition">
+                    <number>100</number>
+                   </property>
                    <property name="orientation">
                     <enum>Qt::Vertical</enum>
+                   </property>
+                   <property name="invertedAppearance">
+                    <bool>false</bool>
+                   </property>
+                   <property name="tickPosition">
+                    <enum>QSlider::NoTicks</enum>
+                   </property>
+                   <property name="tickInterval">
+                    <number>0</number>
                    </property>
                   </widget>
                  </item>
@@ -182,31 +220,13 @@ QSlider::handle:vertical
            <item>
             <layout class="QVBoxLayout" name="verticalLayout_2">
              <item>
-              <widget class="QPushButton" name="btn_play">
-               <property name="enabled">
-                <bool>true</bool>
-               </property>
-               <property name="maximumSize">
-                <size>
-                 <width>16777215</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="contextMenuPolicy">
-                <enum>Qt::NoContextMenu</enum>
-               </property>
-               <property name="acceptDrops">
-                <bool>false</bool>
-               </property>
-               <property name="autoFillBackground">
-                <bool>false</bool>
-               </property>
+              <widget class="QPushButton" name="btn_cd">
                <property name="text">
                 <string/>
                </property>
                <property name="icon">
                 <iconset resource="player.qrc">
-                 <normaloff>:/icons/play</normaloff>:/icons/play</iconset>
+                 <normaloff>:/icons/Resources/icons/media-playback-cd.png</normaloff>:/icons/Resources/icons/media-playback-cd.png</iconset>
                </property>
                <property name="iconSize">
                 <size>
@@ -297,13 +317,31 @@ QSlider::handle:vertical
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="btn_close">
+              <widget class="QPushButton" name="btn_play">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>16777215</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="contextMenuPolicy">
+                <enum>Qt::NoContextMenu</enum>
+               </property>
+               <property name="acceptDrops">
+                <bool>false</bool>
+               </property>
+               <property name="autoFillBackground">
+                <bool>false</bool>
+               </property>
                <property name="text">
                 <string/>
                </property>
                <property name="icon">
                 <iconset resource="player.qrc">
-                 <normaloff>:/icons/quit</normaloff>:/icons/quit</iconset>
+                 <normaloff>:/icons/play</normaloff>:/icons/play</iconset>
                </property>
                <property name="iconSize">
                 <size>
@@ -330,22 +368,5 @@ QSlider::handle:vertical
  <resources>
   <include location="player.qrc"/>
  </resources>
- <connections>
-  <connection>
-   <sender>btn_close</sender>
-   <signal>pressed()</signal>
-   <receiver>MainWindow</receiver>
-   <slot>close()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>259</x>
-     <y>131</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>199</x>
-     <y>149</y>
-    </hint>
-   </hints>
-  </connection>
- </connections>
+ <connections/>
 </ui>
