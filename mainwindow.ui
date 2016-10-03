@@ -226,13 +226,16 @@ QSlider::handle:vertical
                </property>
                <property name="icon">
                 <iconset resource="player.qrc">
-                 <normaloff>:/icons/Resources/icons/media-playback-cd.png</normaloff>:/icons/Resources/icons/media-playback-cd.png</iconset>
+                 <normaloff>:/icons/Resources/icons/media-GoodNight.svg</normaloff>:/icons/Resources/icons/media-GoodNight.svg</iconset>
                </property>
                <property name="iconSize">
                 <size>
                  <width>64</width>
-                 <height>64</height>
+                 <height>66</height>
                 </size>
+               </property>
+               <property name="checkable">
+                <bool>false</bool>
                </property>
               </widget>
              </item>

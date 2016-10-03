@@ -35,7 +35,6 @@ MainWindow::MainWindow(QWidget *parent) :
     Key_Timeout(180),
     myConfigFile( QDir::homePath().append(QDir::separator()).append(THE_CONFIG_FILE_NAME))
 {     
-
     // --- Setup GPIO's for KEY's and LED's ---
     // LED 1
     gpio_export(Led_1_GPIO);
@@ -82,6 +81,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(player,SIGNAL(playbackPosition(int)), this, SLOT(on_currentPosition(int)));
     connect(player,SIGNAL(playbackStarted()), this, SLOT(on_playbackStarted()));
     connect(player,SIGNAL(playbackEnded()), this, SLOT(on_playbackEnded()));
+    connect(&continueToPlay,SIGNAL(startPlayback(QString,int,int)),this,SLOT(startPlayback(QString,int,int)));
+
 
     uartListener = new QThread();
     rfidListener * uartWorker = new rfidListener();
@@ -95,15 +96,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     uartListener->start();    
 
+    // Restore last playlist
+
+
+
     ui->setupUi(this);
-    player->setVolume(ui->volumeSlider->value());
-    ui->statusBar->showMessage("Idle");
 
-    // --- Start PA Alimentation ---
-
-
-
-    //gpio_burst(Led_1_GPIO);
     // --- Initialise the play lists from .config file ---
     initPlayList();        
     grabGesture(Qt::SwipeGesture);
@@ -145,6 +143,20 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::startPlayback(QString playlist, int track, int position)
+{
+    on_PlayList_activated(playlist);
+    ui->statusBar->showMessage(playlist.prepend("Loading last plaid playlist: "));
+
+    if (track < ui->FileList->count()){
+        ui->FileList->setCurrentRow(track);
+        ui->FileList->itemClicked(ui->FileList->currentItem());
+        // Add here the update for the current track
+    }
+    emit player->pos(position);
+
+}
+
 /*!
  * \brief Update player status bar
  *
@@ -163,6 +175,7 @@ bool MainWindow::playNext()
     if ((ui->FileList->currentRow()+1) < ui->FileList->count()){
         ui->FileList->setCurrentRow(ui->FileList->currentRow()+1);
         ui->FileList->itemClicked(ui->FileList->currentItem());
+        // Add here the update for the current track
         return true;
     }
     else{
@@ -325,8 +338,8 @@ MainWindow::initPlayList(void)
     }
 
     // Show the files from the default play list
-    const QString playList = "Default";
-    on_PlayList_activated(playList);
+    //const QString playList = "Default";
+    //on_PlayList_activated(playList);
 } // MainWindow::initPlayList
 
 /*!
@@ -393,9 +406,9 @@ MainWindow::get_PlayList_from_name(const char* inNameP)
 } // MainWindow::get_PlayList_from_name
 
 /*!
- * \brief Get playlist from name
+ * \brief Get playlist from rfid-tag
  *
- * \param playlist rfid string
+ * \param inRfidP rfid string
  * \returns \p integer id of the playlist found. returns last playlist id if no playlist found
  */
 uint8_t
@@ -464,7 +477,10 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
 void
 MainWindow::on_PlayList_activated(const QString &arg1)
 {
-    ui->FileList->clear();    
+    // store currently selected playlist
+    continueToPlay.setCurrentPlaylist(arg1);
+
+    ui->FileList->clear();
 
      // copy the name of the playList for further treatment
     const char* tmpP    = arg1.toStdString().c_str();
@@ -592,6 +608,7 @@ void MainWindow::loadCover(QString path){
 void
 MainWindow::on_FileList_itemClicked(QListWidgetItem *item)
 {      
+    continueToPlay.setCurrentTrack(ui->FileList->currentRow());
     player->loadFile(item->text());
     player->play();
 } // MainWindow::on_FileList_itemClicked
@@ -684,6 +701,9 @@ MainWindow::timeout_LED(void)
         }
 
         irTimeout--;
+        continueToPlay.load();
+        ui->volumeSlider->setValue(ui->volumeSlider->maximum());
+        ui->statusBar->showMessage("Idle");
     }
     if(irTimeout > IR_STATE_UNMUTE)
     {
@@ -843,18 +863,6 @@ void MainWindow::swipeTriggered(QSwipeGesture *gesture)
     }
 }
 void MainWindow::on_btn_cd_pressed()
-{
-    QByteArray data;
-    QFile file("/dev/jvc-remote");
-    int i;
-    //Mute
-    data.clear();
-    data.append(0x47);
-    data.append(0x05);
-    for(i = 0 ; i< 25;i++)
-    {
-        file.open(QIODevice::WriteOnly);
-        file.write(data);
-        file.close();
-    }
+{    
+    continueToPlay.setPlaybackPosition(ui->hBar_position->value()-4);
 }

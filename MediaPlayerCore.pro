@@ -18,27 +18,53 @@ SOURCES += main.cpp\
     mplayer.cpp \
     kvp_keyvalueparser.c \
     rfid.c \
-    rfidlistener.cpp
+    rfidlistener.cpp \
+    continuetoplay.cpp
 
 HEADERS  += mainwindow.h \
     gpio.h \    
     mplayer.h \
     kvp_keyvalueparser.h \
     rfid.h \
-    rfidlistener.h
+    rfidlistener.h \
+    continuetoplay.h
 
 FORMS    += mainwindow.ui
 
-INCLUDEPATH += /opt/crosstools/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux/arm-linux-gnueabihf/libc/usr/include
-INCLUDEPATH += /opt/embedded/bbb/rootfs/usr/include
-INCLUDEPATH += /opt/embedded/bbb/rootfs/usr/local/include
-LIBS += -L/opt/embedded/bbb/rootfs/lib
-LIBS += -L/opt/embedded/bbb/rootfs/usr/lib
-LIBS += -L/opt/embedded/bbb/rootfs/usr/local/lib
-LIBS += -L/opt/embedded/bbb/rootfs/usr/local/qt-5.3/lib -lz -lpthread -lm -lqwt -lQt5Gui -lGLES_CM -lGLESv2 -lusc
-target.path = /usr/local/bin
+#INCLUDEPATH += /opt/crosstools/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux/arm-linux-gnueabihf/libc/usr/include
+#INCLUDEPATH += /opt/embedded/bbb/rootfs/usr/include
+#INCLUDEPATH += /opt/embedded/bbb/rootfs/usr/local/include
+#LIBS += -L/opt/embedded/bbb/rootfs/lib
+#LIBS += -L/opt/embedded/bbb/rootfs/usr/lib
+#LIBS += -L/opt/embedded/bbb/rootfs/usr/local/lib
+#LIBS += -L/opt/embedded/bbb/rootfs/usr/local/qt-5.3/lib -lz -lpthread -lm -lqwt -lQt5Gui -lGLES_CM -lGLESv2 -lusc
+#target.path = /usr/local/bin
 
-INSTALLS += target
+
+# Hack to use a system variable in a comparision
+TMP_ARCH = $$(ARCH)
+equals(TMP_ARCH, "arm"){
+    message("Building for ARM")
+
+    DEFINES += ARM
+    INCLUDEPATH += /opt/crosstools/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux/arm-linux-gnueabihf/libc/usr/include
+    INCLUDEPATH += /opt/embedded/bbb/rootfs/usr/include
+    INCLUDEPATH += /opt/embedded/bbb/rootfs/usr/local/include
+    LIBS += -L/opt/embedded/bbb/rootfs/lib
+    LIBS += -L/opt/embedded/bbb/rootfs/usr/lib
+    LIBS += -L/opt/embedded/bbb/rootfs/usr/local/lib
+    LIBS += -L/opt/embedded/bbb/rootfs/usr/local/qt-5.3/lib -lz -lpthread -lm -lqwt -lQt5Gui -lGLES_CM -lGLESv2 -lusc
+
+    QMAKE_RPATHDIR += /opt/embedded/bbb/rootfs/usr/lib/arm-linux-gnueabihf\
+
+    target.path = /usr/local/bin
+    INSTALLS += target
+} else {
+    message("Building for " $$TMP_ARCH)
+}
+
+
+#INSTALLS += target
 
 RESOURCES += \
     player.qrc

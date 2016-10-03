@@ -45,6 +45,7 @@ public slots:
     void play();
     void stop();
     void pause();
+    void pos(int percentage);
     void ff(int frames);
     void rw(int frames);
     void setVolume(int value);

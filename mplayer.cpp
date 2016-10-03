@@ -261,6 +261,19 @@ void mplayer::ff(int frames){
 }
 
 /*!
+ * \brief go to position
+ *
+ * \param postion in percent of whole track len
+ */
+void mplayer::pos(int percentage){
+    QString cmd = "seek ";
+    cmd.append(QString::number(percentage));
+    cmd.append(" 1");
+    sendCommandToPlayer(cmd);
+    seeking = 150;
+}
+
+/*!
  * \brief rewind the media file
  *
  * \param number of frames to seek

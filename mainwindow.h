@@ -5,9 +5,11 @@
 #include <QListWidgetItem>
 #include <QSwipeGesture>
 #include <QGestureEvent>
+#include <QSettings>
 #include <stdint.h>
 #include "mplayer.h"
 #include "rfidlistener.h"
+#include "continuetoplay.h"
 
 namespace Ui {
 class MainWindow;
@@ -24,6 +26,9 @@ public:
     ~MainWindow();
 protected:
     bool event(QEvent *event);
+
+public slots:
+    void startPlayback(QString playlist, int track, int position);
 
 private slots:
     void on_btn_play_pressed();
@@ -114,6 +119,7 @@ private:
     const QString myConfigFile;
     void swipeTriggered(QSwipeGesture*);
     bool gestureEvent(QGestureEvent *event);
+    ContinueToPlay continueToPlay;
 };
 
 #endif // MAINWINDOW_H

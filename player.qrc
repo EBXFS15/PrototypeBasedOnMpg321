@@ -10,5 +10,6 @@
         <file>Resources/icons/grey_sliderVertical.png</file>
         <file>Resources/icons/logo.png</file>
         <file>Resources/icons/media-playback-cd.png</file>
+        <file>Resources/icons/media-GoodNight.svg</file>
     </qresource>
 </RCC>
