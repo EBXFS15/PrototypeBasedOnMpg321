@@ -9,6 +9,8 @@
 #include "gpio.h"
 #include <QCoreApplication>
 #include <QDir>
+#include <QEvent>
+#include <QMetaEnum>
 
 
 // The configuration file name
@@ -22,7 +24,7 @@
  * \param parent widget
  */
 MainWindow::MainWindow(QWidget *parent) :
-    QMainWindow(parent),
+    QMainWindow(parent), 
     ui(new Ui::MainWindow),
     Key_SW1_GPIO(7),
     Key_SW2_GPIO(60),
@@ -35,6 +37,7 @@ MainWindow::MainWindow(QWidget *parent) :
     Key_Timeout(180),
     myConfigFile( QDir::homePath().append(QDir::separator()).append(THE_CONFIG_FILE_NAME))
 {     
+
     // --- Setup GPIO's for KEY's and LED's ---
     // LED 1
     gpio_export(Led_1_GPIO);
@@ -90,21 +93,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     connect(uartListener,SIGNAL(started()),uartWorker,SLOT(process()));
     connect(uartWorker,SIGNAL(newTagDetected(QString)), this,SLOT(rfidTagDetected(QString)));
-    //connect(uartWorker, SIGNAL(newTagDetected(QString)), uartListener, SLOT(quit()));
-    //connect(uartWorker, SIGNAL(newTagDetected(QString)), uartWorker, SLOT(deleteLater()));
-    //connect(uartListener, SIGNAL(finished()), uartListener, SLOT(deleteLater()));
-
     uartListener->start();    
-
-    // Restore last playlist
-
-
 
     ui->setupUi(this);
 
     // --- Initialise the play lists from .config file ---
     initPlayList();        
-    grabGesture(Qt::SwipeGesture);
+
 }
 
 /*!
@@ -151,9 +146,11 @@ void MainWindow::startPlayback(QString playlist, int track, int position)
     if (track < ui->FileList->count()){
         ui->FileList->setCurrentRow(track);
         ui->FileList->itemClicked(ui->FileList->currentItem());
+        emit player->pos(position);
         // Add here the update for the current track
     }
-    emit player->pos(position);
+
+    //emit player->ff(position);
 
 }
 
@@ -179,7 +176,14 @@ bool MainWindow::playNext()
         return true;
     }
     else{
-        return false;
+        if(ui->btn_cd->isChecked()){
+            ui->FileList->setCurrentRow(0);
+            ui->FileList->itemClicked(ui->FileList->currentItem());
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 }
 
@@ -225,22 +229,29 @@ void MainWindow::on_btn_RW_pressed()
     playPrevious();
 }
 
-void MainWindow::on_btn_close_pressed()
-{     
-
-}
 
 void MainWindow::on_btn_pause_pressed()
 {
     player->pause();
 }
 
+
+void MainWindow::on_btn_sleep_pressed()
+{
+    player->pause();
+    continueToPlay.setPlaybackPosition(this->ui->hBar_position->value()/10);
+    continueToPlay.store();
+}
+
+
 void MainWindow::on_playbackStarted(){
     playbackOnGoing(true);
 }
 
 void MainWindow::on_currentPosition(int position){
+    //save position
     this->ui->hBar_position->setValue(position);
+    continueToPlay.setPlaybackPosition(position/10);
 }
 
 void MainWindow::on_playbackEnded(){
@@ -552,7 +563,7 @@ MainWindow::on_PlayList_activated(const QString &arg1)
                                           100);        // length of songName buffer
 
         if (status == KvpAttributeSuccess) {
-            ui->FileList->addItem(songName);
+            ui->FileList->addItem(songName);            
         }
 
     } // for (uint8_t nbr = 1; status == KvpAttributeSuccess; nbr++;)
@@ -624,7 +635,8 @@ void
 MainWindow::timeout_LED(void)
 {
     static unsigned short x = 0;
-    static unsigned short irTimeout = 8;
+    // irTimeout normally set to IR_STATE_MUTE + 1
+    static unsigned short irTimeout = (IR_STATE_MUTE + 1);
     QByteArray data;
     QFile file("/dev/jvc-remote");
     x++;
@@ -673,9 +685,7 @@ MainWindow::timeout_LED(void)
     }
 
     if(irTimeout == IR_STATE_SET_AUX)
-    {
-        int i = 0;
-
+    {        
         //Set to AUX
         data.clear();
         data.append(0x47);
@@ -688,12 +698,17 @@ MainWindow::timeout_LED(void)
     }
     if(irTimeout == IR_STATE_UNMUTE)
     {
+        // Load music that was played before shut-down
+        continueToPlay.load();
+        player->setVolume(100);
+        ui->statusBar->showMessage("Idle");
+
         int i = 0;
         // UnMute
         data.clear();
         data.append(0x47);
         data.append(0x04);
-        for(i = 0 ; i< 16;i++)
+        for(i = 0 ; i< 12;i++)
         {
             file.open(QIODevice::WriteOnly);
             file.write(data);
@@ -701,9 +716,6 @@ MainWindow::timeout_LED(void)
         }
 
         irTimeout--;
-        continueToPlay.load();
-        ui->volumeSlider->setValue(ui->volumeSlider->maximum());
-        ui->statusBar->showMessage("Idle");
     }
     if(irTimeout > IR_STATE_UNMUTE)
     {
@@ -815,15 +827,15 @@ MainWindow::timeout_KEY(void)
 void
 MainWindow::on_volumeSlider_valueChanged(int value)
 {
-    if(value<=ui->volumeSlider->maximum() &&
-       value>=ui->volumeSlider->minimum())
-    {
-        player->setVolume(value);
-    }
-    else
-    {
-        ui->statusBar->showMessage("Error: wrong volume.");
-    }
+//    if(value<=ui->volumeSlider->maximum() &&
+//       value>=ui->volumeSlider->minimum())
+//    {
+//        player->setVolume(value);
+//    }
+//    else
+//    {
+//        ui->statusBar->showMessage("Error: wrong volume.");
+//    }
 }
 
 
@@ -835,13 +847,22 @@ void MainWindow::on_PlayList_activated(int index)
 
 bool MainWindow::event(QEvent *event)
 {
+    static int eventEnumIndex = QEvent::staticMetaObject.indexOfEnumerator("Type");
+    if(event->type() != QEvent::UpdateRequest){
+        qDebug() << "gestureEvent():" << QEvent::staticMetaObject
+                .enumerator(eventEnumIndex).valueToKey(event->type());
+    }
     if (event->type() == QEvent::Gesture)
+    {
+
         return gestureEvent(static_cast<QGestureEvent*>(event));
+    }
     return QWidget::event(event);
 }
 
 bool MainWindow::gestureEvent(QGestureEvent *event)
 {
+    event->accept();
     if (QGesture *swipe = event->gesture(Qt::SwipeGesture))
         swipeTriggered(static_cast<QSwipeGesture *>(swipe));
     return true;
@@ -864,5 +885,5 @@ void MainWindow::swipeTriggered(QSwipeGesture *gesture)
 }
 void MainWindow::on_btn_cd_pressed()
 {    
-    continueToPlay.setPlaybackPosition(ui->hBar_position->value()-4);
+    //continueToPlay.setPlaybackPosition(ui->hBar_position->value()/1);
 }

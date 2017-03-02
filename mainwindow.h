@@ -39,9 +39,9 @@ private slots:
 
     void on_btn_RW_pressed();
 
-    void on_btn_close_pressed();
-
     void on_btn_pause_pressed();
+
+    void on_btn_sleep_pressed();
 
     void on_playbackStarted();
 

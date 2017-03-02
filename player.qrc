@@ -11,5 +11,7 @@
         <file>Resources/icons/logo.png</file>
         <file>Resources/icons/media-playback-cd.png</file>
         <file>Resources/icons/media-GoodNight.svg</file>
+        <file>Resources/icons/repeat.svg</file>
+        <file>Resources/icons/doNotRepeat.svg</file>
     </qresource>
 </RCC>

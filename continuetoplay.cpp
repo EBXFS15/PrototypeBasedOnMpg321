@@ -3,6 +3,7 @@
 ContinueToPlay::ContinueToPlay(QObject *parent) : QObject(parent)
 {
     //QSettings(Scope scope, const QString & organization, const QString & application = QString(), QObject * parent = 0)
+    createConfigEnvironment();
     settings = new QSettings(FILE_NAME_STARTUP_CONFIG, QSettings::NativeFormat, parent);
     loaded = false;
 }
@@ -16,12 +17,16 @@ void ContinueToPlay::setCurrentTrack(int track)
     }
 }
 
+void ContinueToPlay::store(void)
+{
+    settings->sync();
+}
+
 void ContinueToPlay::setPlaybackPosition(int position)
 {
     if (loaded)
     {
-        settings->setValue("position", position);
-        settings->sync();
+        settings->setValue("position", position);        
     }
 }
 
@@ -34,10 +39,22 @@ void ContinueToPlay::setCurrentPlaylist(QString playlist)
     }
 }
 
+void ContinueToPlay::createConfigEnvironment()
+{
+    if (!QDir(CONFIG_ROOT_PATH).exists())
+    {
+        QDir().mkdir(CONFIG_ROOT_PATH);
+    }
+    if (!QDir(CONFIG_FILE_ROOT_PATH).exists())
+    {
+        QDir().mkdir(CONFIG_FILE_ROOT_PATH);
+    }
+}
+
 void ContinueToPlay::load()
 {
-    if (settings->contains("playlist"))
-    {
+    if (settings->contains("playlist") && (loaded == false))
+    {                
         QString playlist = "";
         int track = 0;
         int position = 0;
