@@ -848,10 +848,10 @@ void MainWindow::on_PlayList_activated(int index)
 bool MainWindow::event(QEvent *event)
 {
     static int eventEnumIndex = QEvent::staticMetaObject.indexOfEnumerator("Type");
-    if(event->type() != QEvent::UpdateRequest){
-        qDebug() << "gestureEvent():" << QEvent::staticMetaObject
-                .enumerator(eventEnumIndex).valueToKey(event->type());
-    }
+//    if(event->type() != QEvent::UpdateRequest){
+//        qDebug() << "gestureEvent():" << QEvent::staticMetaObject
+//                .enumerator(eventEnumIndex).valueToKey(event->type());
+//    }
     if (event->type() == QEvent::Gesture)
     {
 

@@ -13,5 +13,9 @@
         <file>Resources/icons/media-GoodNight.svg</file>
         <file>Resources/icons/repeat.svg</file>
         <file>Resources/icons/doNotRepeat.svg</file>
+        <file>Resources/icons/media-GoodMorning.svg</file>
+        <file>Resources/icons/media-nextPlaylist.svg</file>
+        <file>Resources/icons/media-previousPlaylist.svg</file>
+        <file>Resources/icons/media-open.svg</file>
     </qresource>
 </RCC>

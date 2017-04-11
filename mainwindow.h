@@ -49,6 +49,12 @@ private slots:
 
     void on_playbackEnded();
 
+    void on_btn_previousAlbum();
+
+    void on_btn_openAlbum();
+
+    void on_btn_previousAlbum();
+
     void player_update(QString newStatus);
 
     // Retrieve all play lists from the configuration
