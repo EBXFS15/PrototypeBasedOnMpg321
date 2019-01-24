@@ -53,13 +53,22 @@ void ContinueToPlay::createConfigEnvironment()
 
 void ContinueToPlay::load()
 {
-    if (settings->contains("playlist") && (loaded == false))
+    //if (settings->contains("playlist") && (loaded == false))
+    if (settings->contains("playlist") )
     {                
         QString playlist = "";
         int track = 0;
         int position = 0;
         track = settings->value("track",track).toInt();
+        if (track < 0)
+        {
+            track = 0;
+        }
         position = settings->value("position").toInt();
+        if (position < 0)
+        {
+            position = 0;
+        }
         playlist = settings->value("playlist",playlist).toString();
         emit startPlayback(playlist, track, position);
     }

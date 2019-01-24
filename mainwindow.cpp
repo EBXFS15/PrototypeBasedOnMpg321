@@ -6,7 +6,6 @@
 #include <QTimer>
 #include <QMessageBox>
 #include "kvp_keyvalueparser.h"
-#include "gpio.h"
 #include <QCoreApplication>
 #include <QDir>
 #include <QEvent>
@@ -18,6 +17,7 @@
 // The maximum number of supported playlist's
 #define MAX_NBR_OF_PLAYLIST  (255)
 #define PLAY_VOLUME 100
+#define FILENAME_BUFFER 180
 /*!
  * \brief Constructor
  *
@@ -26,56 +26,11 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent), 
     ui(new Ui::MainWindow),
-    Key_SW1_GPIO(7),
-    Key_SW2_GPIO(60),
-    Key_SW3_GPIO(48),
-    Key_SW4_GPIO(51),
-    Key_SW5_GPIO(115),
-    Led_1_GPIO(68),
-    Led_2_GPIO(69),
     Led_Timeout(1000),
     Key_Timeout(180),
     myConfigFile( QDir::homePath().append(QDir::separator()).append(THE_CONFIG_FILE_NAME))
 {     
-
-    // --- Setup GPIO's for KEY's and LED's ---
-    // LED 1
-    gpio_export(Led_1_GPIO);
-    gpio_setToOutput(Led_1_GPIO);
-    // LED 2
-    gpio_export(Led_2_GPIO);
-    gpio_setToOutput(Led_2_GPIO);
-
-    // Turn on AMPLIFIER
-    gpio_set(Led_1_GPIO);
-
-    // SW1
-    gpio_export(Key_SW1_GPIO);
-    gpio_setToInput(Key_SW1_GPIO);
-    // SW2
-    gpio_export(Key_SW2_GPIO);
-    gpio_setToInput(Key_SW2_GPIO);
-    // SW3
-    gpio_export(Key_SW3_GPIO);
-    gpio_setToInput(Key_SW3_GPIO);
-    // SW4
-    gpio_export(Key_SW4_GPIO);
-    gpio_setToInput(Key_SW4_GPIO);
-    // SW5
-    gpio_export(Key_SW5_GPIO);
-    gpio_setToInput(Key_SW5_GPIO);
-
-
-
-    // --- Set and start LED timer ---
-    QTimer *timer_LED = new QTimer(this);
-    connect(timer_LED, SIGNAL(timeout()), this, SLOT(timeout_LED()));
-    timer_LED->start(Led_Timeout);
-
-    // --- Set and start KEY timer ---
-    QTimer *timer_KEY = new QTimer(this);
-    connect(timer_KEY, SIGNAL(timeout()), this, SLOT(timeout_KEY()));
-    timer_KEY->start(Key_Timeout);
+    hwHal = new hal();
 
     player = new mplayer();
 
@@ -84,17 +39,19 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(player,SIGNAL(playbackPosition(int)), this, SLOT(on_currentPosition(int)));
     connect(player,SIGNAL(playbackStarted()), this, SLOT(on_playbackStarted()));
     connect(player,SIGNAL(playbackEnded()), this, SLOT(on_playbackEnded()));
+    connect(hwHal, SIGNAL(ready(void)), this, SLOT(hardwareReady(void)));
+
+    connect(hwHal, SIGNAL(key_SW1_pressed(void)), this, SLOT(on_btn_play_pressed()));
+    connect(hwHal, SIGNAL(key_SW2_pressed(void)), this, SLOT(on_btn_pause_pressed()));
+    connect(hwHal, SIGNAL(key_SW3_pressed(void)), this, SLOT(on_btn_RW_pressed()));
+    connect(hwHal, SIGNAL(key_SW4_pressed(void)), this, SLOT(on_btn_ff_pressed()));
+    connect(hwHal, SIGNAL(key_SW5_pressed(void)), this, SLOT(on_btn_stop_pressed()));
+
+    connect(hwHal, SIGNAL(newTagDetected(QString)), this,SLOT(rfidTagDetected(QString)));
+
     connect(&continueToPlay,SIGNAL(startPlayback(QString,int,int)),this,SLOT(startPlayback(QString,int,int)));
 
-
-    uartListener = new QThread();
-    rfidListener * uartWorker = new rfidListener();
-    uartWorker->moveToThread(uartListener);
-
-    connect(uartListener,SIGNAL(started()),uartWorker,SLOT(process()));
-    connect(uartWorker,SIGNAL(newTagDetected(QString)), this,SLOT(rfidTagDetected(QString)));
-    uartListener->start();    
-
+    tempPlaylist = -1;
     ui->setupUi(this);
 
     // --- Initialise the play lists from .config file ---
@@ -102,44 +59,28 @@ MainWindow::MainWindow(QWidget *parent) :
 
 }
 
+void MainWindow::hardwareReady()
+{
+    player->setVolume(10);
+    ui->statusBar->showMessage("Idle");
+}
+
+
 /*!
  * \brief Destructor
  * \details
- * GPIOs will be unexported here.
  */
 MainWindow::~MainWindow()
 {
-    /** Cedric: TODO: Move this to ~MainWindow()
-     */    
-
-    // --- Free GIO resources ---
-    // SW1
-    gpio_unexport(Key_SW1_GPIO);
-    // SW2
-    gpio_unexport(Key_SW2_GPIO);
-    // SW3
-    gpio_unexport(Key_SW3_GPIO);
-    // SW4
-    gpio_unexport(Key_SW4_GPIO);
-    // SW5
-    gpio_unexport(Key_SW5_GPIO);
-
-    // LED1
-    gpio_clear(Led_1_GPIO);
-    gpio_unexport(Led_1_GPIO);
-    // LED2
-    gpio_clear(Led_2_GPIO);
-    gpio_unexport(Led_2_GPIO);
-
-
-    uartListener->terminate();
-    delete uartListener;
+    delete hwHal;    
     delete player;
     delete ui;
 }
 
 void MainWindow::startPlayback(QString playlist, int track, int position)
 {
+    //ui->btn_stop();
+    ui->PlayList->setCurrentText(playlist);
     on_PlayList_activated(playlist);
     ui->statusBar->showMessage(playlist.prepend("Loading last plaid playlist: "));
 
@@ -149,9 +90,6 @@ void MainWindow::startPlayback(QString playlist, int track, int position)
         emit player->pos(position);
         // Add here the update for the current track
     }
-
-    //emit player->ff(position);
-
 }
 
 /*!
@@ -169,20 +107,29 @@ void MainWindow::player_update(QString newStatus)
  */
 bool MainWindow::playNext()
 {
-    if ((ui->FileList->currentRow()+1) < ui->FileList->count()){
-        ui->FileList->setCurrentRow(ui->FileList->currentRow()+1);
+
+    if(ui->btn_singleRepeat->isChecked())
+    {
         ui->FileList->itemClicked(ui->FileList->currentItem());
-        // Add here the update for the current track
         return true;
     }
-    else{
-        if(ui->btn_cd->isChecked()){
-            ui->FileList->setCurrentRow(0);
+    else
+    {
+        if ((ui->FileList->currentRow()+1) < ui->FileList->count()){
+            ui->FileList->setCurrentRow(ui->FileList->currentRow()+1);
             ui->FileList->itemClicked(ui->FileList->currentItem());
+            // Add here the update for the current track
             return true;
         }
         else{
-            return false;
+            if(ui->btn_cd->isChecked()){
+                ui->FileList->setCurrentRow(0);
+                ui->FileList->itemClicked(ui->FileList->currentItem());
+                return true;
+            }
+            else{
+                return false;
+            }
         }
     }
 }
@@ -193,13 +140,21 @@ bool MainWindow::playNext()
  */
 bool MainWindow::playPrevious()
 {
-    if ((ui->FileList->currentRow()-1) >= 0){
-        ui->FileList->setCurrentRow(ui->FileList->currentRow()-1);
+    if(ui->btn_singleRepeat->isChecked())
+    {
         ui->FileList->itemClicked(ui->FileList->currentItem());
         return true;
     }
-    else{
-        return false;
+    else
+    {
+        if ((ui->FileList->currentRow()-1) >= 0){
+            ui->FileList->setCurrentRow(ui->FileList->currentRow()-1);
+            ui->FileList->itemClicked(ui->FileList->currentItem());
+            return true;
+        }
+        else{
+            return false;
+        }
     }
 }
 
@@ -239,6 +194,9 @@ void MainWindow::on_btn_pause_pressed()
 void MainWindow::on_btn_sleep_pressed()
 {
     player->pause();
+    // store currently selected playlist
+    continueToPlay.setCurrentPlaylist(ui->PlayList->currentText());
+    continueToPlay.setCurrentTrack(ui->FileList->currentRow());
     continueToPlay.setPlaybackPosition(this->ui->hBar_position->value()/10);
     continueToPlay.store();
 }
@@ -251,7 +209,7 @@ void MainWindow::on_playbackStarted(){
 void MainWindow::on_currentPosition(int position){
     //save position
     this->ui->hBar_position->setValue(position);
-    continueToPlay.setPlaybackPosition(position/10);
+    //continueToPlay.setPlaybackPosition(position/10);
 }
 
 void MainWindow::on_playbackEnded(){
@@ -288,9 +246,6 @@ void MainWindow::rfidTagDetected(QString tagId){
     else{
         ui->statusBar->showMessage(tagId.prepend("Unknown TAG-Discovered: "));
     }
-
-    uartListener->quit();
-    uartListener->start();
 }
 
 /*!
@@ -304,7 +259,7 @@ MainWindow::initPlayList(void)
     static const char PlayListTag[] = "PlayList";
     char sectionName[30]            = {'\0'};
     char key[]                      = "name";
-    char playListName[100]          = {'\0'};
+    char playListName[FILENAME_BUFFER]          = {'\0'};
     uint32_t fileId                 = 0;
 
     const char* configFileP = myConfigFile.toStdString().c_str();
@@ -335,10 +290,11 @@ MainWindow::initPlayList(void)
                                           sectionName,  // section
                                           key,          // key
                                           playListName, // value
-                                          100);         // length of playListName buffer
+                                          FILENAME_BUFFER);         // length of playListName buffer
 
         if (status == KvpAttributeSuccess) {
             ui->PlayList->addItem(playListName);
+
         }
     } // for (uint8_t nbr = 1; status == KvpAttributeSuccess; nbr++;)
 
@@ -366,7 +322,7 @@ MainWindow::get_PlayList_from_name(const char* inNameP)
     static const char PlayListTag[] = "PlayList";
     char sectionName[30]            = {'\0'};
     char key[]                      = "name";
-    char playListName[100]          = {'\0'};
+    char playListName[FILENAME_BUFFER ]          = {'\0'};
 
     uint32_t fileId = 0;
     const char* configFileP = myConfigFile.toStdString().c_str();
@@ -379,8 +335,6 @@ MainWindow::get_PlayList_from_name(const char* inNameP)
 
     KvpAttributeState status = KvpAttributeSuccess;
     for (nbr = 1; status == KvpAttributeSuccess; nbr++) {
-
-
         sectionName[0] = '\0';
         int ret = snprintf(sectionName, 30, "%s%d", PlayListTag, nbr);
         if (ret >= 30) {
@@ -395,7 +349,7 @@ MainWindow::get_PlayList_from_name(const char* inNameP)
                                           sectionName,  // section
                                           key,          // key
                                           playListName, // value
-                                          100);         // length of playListName buffer
+                                          FILENAME_BUFFER );         // length of playListName buffer
 
         if (status == KvpAttributeSuccess) {
             int ret = strcmp(inNameP, playListName);
@@ -429,7 +383,7 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
     static const char PlayListTag[] = "PlayList";
     char sectionName[30]            = {'\0'};
     char key[]                      = "rfid";
-    char rfidName[100]              = {'\0'};
+    char rfidName[FILENAME_BUFFER ]              = {'\0'};
 
     uint32_t fileId = 0;
     const char* configFileP = myConfigFile.toStdString().c_str();
@@ -458,7 +412,7 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
                                           sectionName,  // section
                                           key,          // key
                                           rfidName,     // value
-                                          100);         // length of playListName buffer
+                                          FILENAME_BUFFER );         // length of playListName buffer
 
         if (status == KvpAttributeSuccess) {            
             rfidName[14] = '\0';
@@ -480,6 +434,103 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
     return nbr;
 } // MainWindow::get_PlayList_from_rfid
 
+void MainWindow::on_btn_previousAlbum_pressed()
+{
+    int listItem = ui->PlayList->currentIndex()-1;
+    if (listItem < 0)
+    {
+        listItem = ui->PlayList->count()-1;
+    }
+    show_Playlist(listItem);
+}
+
+void MainWindow::on_btn_nextAlbum_pressed()
+{
+    int listItem = ui->PlayList->currentIndex()+1;
+    if (listItem >= ui->PlayList->count())
+    {
+        listItem = 0;
+    }
+    show_Playlist(listItem);
+}
+
+void MainWindow::on_btn_openAlbum_pressed()
+{
+    if(tempPlaylist>=0){
+        on_PlayList_activated(ui->PlayList->itemText(tempPlaylist));
+        on_btn_play_pressed();
+    }
+}
+
+void MainWindow::on_btn_wakeup_pressed()
+{
+    // Load music that was played before shut-down
+    continueToPlay.load();
+}
+
+void MainWindow::show_Playlist(int playListItem)
+{
+    // copy the name of the playList for further treatment
+    const char* tmpP    = ui->PlayList->itemText(playListItem).toStdString().c_str();
+    size_t length       = (strlen(tmpP) + 1); // +1 for zero termination
+    char* playListNameP = (char*)malloc(length);
+    (void)strncpy(playListNameP, tmpP, length);
+
+    // get the play list number
+    uint8_t nbr = MainWindow::get_PlayList_from_name(playListNameP);
+
+    // free the buffer, we do not need it anymore
+    free(playListNameP);
+
+    //static const char PathTag[] = "path";
+    char sectionName[30]        = {'\0'};
+    //char key[20]                = {'\0'};
+    char imageKey[]             = "image";
+    //char songName[FILENAME_BUFFER ]          = {'\0'};
+    char imageName[256]         = {'\0'};
+
+    int ret = snprintf(sectionName, 30, "%s%d", "PlayList", nbr);
+    if (ret >= 30) {
+       // snprintf has truncated the name due to to small size of sectionName.
+       // This can never happen as the [Section Name] is part of the application.
+       // But we handle the error and return.
+       return;
+    }
+
+
+    uint32_t fileId = 0;
+    const char* configFileP = myConfigFile.toStdString().c_str();
+    ret = kvp_fileOpen(configFileP, &fileId, false);
+    if (0 != ret) {
+       // Could not open the .config file.
+       // TODO: What error handling do we provide....a status line?
+       showMessageBoxAndClose("Cannot open config file! The application will be closed.");
+       return;
+    }
+
+    KvpAttributeState status = KvpAttributeSuccess;
+    status = KvpAttributeSuccess;
+
+    // get image path
+    status = kvp_getAttributeByFileId(fileId,
+                                     '=',         // delimiter
+                                     sectionName, // section
+                                     imageKey,    // key
+                                     imageName,   // value
+                                     FILENAME_BUFFER );        // length of songName buffer
+
+    if (status == KvpAttributeSuccess) {
+        loadCover(imageName);
+        ui->PlayList->setCurrentText(ui->PlayList->itemText(playListItem));
+        tempPlaylist = playListItem;
+    }
+}
+
+//void MainWindow::load_Playlist(const char* inNameP)
+//{
+
+//}
+
 /*!
  * \brief Update file list if one playlist is chosen
  *
@@ -488,10 +539,10 @@ MainWindow::get_PlayList_from_rfid(const char* inRfidP)
 void
 MainWindow::on_PlayList_activated(const QString &arg1)
 {
-    // store currently selected playlist
-    continueToPlay.setCurrentPlaylist(arg1);
+    currentPlaylist = ui->PlayList->currentIndex();
 
     ui->FileList->clear();
+    currentPlayList.clear();
 
      // copy the name of the playList for further treatment
     const char* tmpP    = arg1.toStdString().c_str();
@@ -509,7 +560,7 @@ MainWindow::on_PlayList_activated(const QString &arg1)
     char sectionName[30]        = {'\0'};
     char key[20]                = {'\0'};
     char imageKey[]             = "image";
-    char songName[100]          = {'\0'};
+    char songName[FILENAME_BUFFER ]          = {'\0'};
     char imageName[256]         = {'\0'};
 
     int ret = snprintf(sectionName, 30, "%s%d", "PlayList", nbr);
@@ -539,7 +590,7 @@ MainWindow::on_PlayList_activated(const QString &arg1)
                                       sectionName, // section
                                       imageKey,    // key
                                       imageName,   // value
-                                      100);        // length of songName buffer
+                                      FILENAME_BUFFER );        // length of songName buffer
 
     loadCover(imageName);
 
@@ -560,10 +611,14 @@ MainWindow::on_PlayList_activated(const QString &arg1)
                                           sectionName, // section
                                           key,         // key
                                           songName,    // value
-                                          100);        // length of songName buffer
+                                          FILENAME_BUFFER);        // length of songName buffer
 
         if (status == KvpAttributeSuccess) {
-            ui->FileList->addItem(songName);            
+            QString filename = songName;
+
+            ui->FileList->addItem(filename.split("/").back());
+
+            currentPlayList.push_back(songName);
         }
 
     } // for (uint8_t nbr = 1; status == KvpAttributeSuccess; nbr++;)
@@ -618,236 +673,25 @@ void MainWindow::loadCover(QString path){
 
 void
 MainWindow::on_FileList_itemClicked(QListWidgetItem *item)
-{      
-    continueToPlay.setCurrentTrack(ui->FileList->currentRow());
-    player->loadFile(item->text());
+{
+    int itemIndex = ui->FileList->row(item);
+
+    player->loadFile(currentPlayList.at(itemIndex));
     player->play();
 } // MainWindow::on_FileList_itemClicked
 
-#define IR_STATE_MUTE 7
-#define IR_STATE_START IR_STATE_MUTE + 1
-#define IR_STATE_PREPARE_SET_IN    IR_STATE_MUTE - 1
-#define IR_STATE_SET_AM    IR_STATE_PREPARE_SET_IN - 1
-#define IR_STATE_SET_AUX   IR_STATE_SET_AM - 1
-#define IR_STATE_UNMUTE IR_STATE_SET_AUX - 4
-
-void
-MainWindow::timeout_LED(void)
-{
-    static unsigned short x = 0;
-    // irTimeout normally set to IR_STATE_MUTE + 1
-    static unsigned short irTimeout = (IR_STATE_MUTE + 1);
-    QByteArray data;
-    QFile file("/dev/jvc-remote");
-    x++;
-    if (x % 2) {
-      gpio_set(Led_2_GPIO);
-    } else {
-      gpio_clear(Led_2_GPIO);
-    }
-    if(irTimeout == IR_STATE_MUTE)
-    {
-        int i = 0;
-
-        //Mute
-        data.clear();
-        data.append(0x47);
-        data.append(0x05);
-        for(i = 0 ; i< 20;i++)
-        {
-            file.open(QIODevice::WriteOnly);
-            file.write(data);
-            file.close();
-        }
-        irTimeout--;
-    }
-    if(irTimeout == IR_STATE_PREPARE_SET_IN)
-    {
-        //Set to AUX
-        data.clear();
-        data.append(0x47);
-        data.append(0x08);
-        file.open(QIODevice::WriteOnly);
-        file.write(data);
-        file.close();
-        irTimeout--;
-    }
-    if(irTimeout == IR_STATE_SET_AM)
-    {
-        //Set to AUX
-        data.clear();
-        data.append(0x47);
-        data.append(0x08);
-        file.open(QIODevice::WriteOnly);
-        file.write(data);
-        file.close();
-        irTimeout--;
-    }
-
-    if(irTimeout == IR_STATE_SET_AUX)
-    {        
-        //Set to AUX
-        data.clear();
-        data.append(0x47);
-        data.append(0x08);
-        file.open(QIODevice::WriteOnly);
-        file.write(data);
-        file.close();
-
-        irTimeout--;
-    }
-    if(irTimeout == IR_STATE_UNMUTE)
-    {
-        // Load music that was played before shut-down
-        continueToPlay.load();
-        player->setVolume(100);
-        ui->statusBar->showMessage("Idle");
-
-        int i = 0;
-        // UnMute
-        data.clear();
-        data.append(0x47);
-        data.append(0x04);
-        for(i = 0 ; i< 12;i++)
-        {
-            file.open(QIODevice::WriteOnly);
-            file.write(data);
-            file.close();
-        }
-
-        irTimeout--;
-    }
-    if(irTimeout > IR_STATE_UNMUTE)
-    {
-        irTimeout--;
-    }
-
-
-} // MainWindow::timeout_LED
-
-void
-MainWindow::timeout_KEY(void)
-{
-    // --- Handle KEY SW1 --
-    // Detect whether user is sleeping and does hold the key,
-    // means a release key has to be detected before we accept
-    // a new keystroke.
-    static bool isSw1Pressed = false;
-
-    int key = 1;
-    gpio_get(Key_SW1_GPIO, &key);
-    if ((0 == key) && (false == isSw1Pressed)) {
-        // SW1 pressed
-        ui->btn_stop->click();
-        isSw1Pressed = true;
-    } else {
-        // Wait for key released
-        if (1 == key) {
-          isSw1Pressed = false;
-        }
-    }
-
-    // --- Handle KEY SW2 --
-    // Detect whether user is sleeping and does hold the key,
-    // means a release key has to be detected before we accept
-    // a new keystroke.
-    static bool isSw2Pressed = false;
-
-    key = 1;
-    gpio_get(Key_SW2_GPIO, &key);
-    if ((0 == key) && (false == isSw2Pressed)) {
-        // SW1 pressed
-        ui->btn_pause->click();
-        isSw2Pressed = true;
-    } else {
-        // Wait for key released
-        if (1 == key) {
-          isSw2Pressed = false;
-        }
-    }
-
-    // --- Handle KEY SW3 --
-    // Detect whether user is sleeping and does hold the key,
-    // means a release key has to be detected before we accept
-    // a new keystroke.
-    static bool isSw3Pressed = false;
-
-    key = 1;
-    gpio_get(Key_SW3_GPIO, &key);
-    if ((0 == key) && (false == isSw3Pressed)) {
-        // SW1 pressed
-        ui->btn_ff->click();
-        isSw3Pressed = false; //true; // do NOT set to true to allow fast ff
-    } else {
-        // Wait for key released
-        if (1 == key) {
-          isSw3Pressed = false;
-        }
-    }
-
-    // --- Handle KEY SW4 --
-    // Detect whether user is sleeping and does hold the key,
-    // means a release key has to be detected before we accept
-    // a new keystroke.
-    static bool isSw4Pressed = false;
-
-    key = 1;
-    gpio_get(Key_SW4_GPIO, &key);
-    if ((0 == key) && (false == isSw4Pressed)) {
-        // SW1 pressed
-        ui->btn_RW->click();
-        isSw4Pressed = false; //true; // do NOT set to true to allow fast rew
-    } else {
-        // Wait for key released
-        if (1 == key) {
-          isSw4Pressed = false;
-        }
-    }
-
-    // --- Handle KEY SW5 --
-    // Detect whether user is sleeping and does hold the key,
-    // means a release key has to be detected before we accept
-    // a new keystroke.
-    static bool isSw5Pressed = false;
-
-    key = 1;
-    gpio_get(Key_SW5_GPIO, &key);
-    if ((0 == key) && (false == isSw5Pressed)) {
-        // SW1 pressed
-        ui->btn_play->pressed();
-        isSw5Pressed = true;
-    } else {
-        // Wait for key released
-        if (1 == key) {
-          isSw5Pressed = false;
-        }
-    }
-} // MainWindow::timeout_KEY
-
-void
-MainWindow::on_volumeSlider_valueChanged(int value)
-{
-//    if(value<=ui->volumeSlider->maximum() &&
-//       value>=ui->volumeSlider->minimum())
-//    {
-//        player->setVolume(value);
-//    }
-//    else
-//    {
-//        ui->statusBar->showMessage("Error: wrong volume.");
-//    }
-}
 
 
 
-void MainWindow::on_PlayList_activated(int index)
-{
 
-}
+//void MainWindow::on_PlayList_activated(int index)
+//{
+
+//}
 
 bool MainWindow::event(QEvent *event)
 {
-    static int eventEnumIndex = QEvent::staticMetaObject.indexOfEnumerator("Type");
+//    static int eventEnumIndex = QEvent::staticMetaObject.indexOfEnumerator("Type");
 //    if(event->type() != QEvent::UpdateRequest){
 //        qDebug() << "gestureEvent():" << QEvent::staticMetaObject
 //                .enumerator(eventEnumIndex).valueToKey(event->type());

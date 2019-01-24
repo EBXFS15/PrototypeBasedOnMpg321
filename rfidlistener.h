@@ -3,13 +3,14 @@
 #include <QObject>
 #include <QThread>
 #include "rfid.h"
+#include "hardware.h"
 
 class rfidListener : public QObject
 {
     Q_OBJECT
 
 public:    
-    rfidListener();
+    rfidListener(Hardware hwType);
     ~rfidListener();
 
 public slots:
@@ -23,7 +24,6 @@ signals:
      * \brief signalization if a new tag was discovered.
      * last discovered tag does not issue a signal.
      * \param tagId TAG-ID of the newly discovered tag.
-     *
      */
     void newTagDetected(QString tagId);
 

@@ -37,57 +37,83 @@
 void
 gpio_export(const int inGpioNumber)
 {
-  FILE* exportP = fopen("/sys/class/gpio/export","w");
-  if(exportP!=NULL){
-    fprintf(exportP, "%d", inGpioNumber);
-    fclose(exportP);
-  }
+    if(inGpioNumber == -1)
+    {
+        return;
+    }
+
+    FILE* exportP = fopen("/sys/class/gpio/export","w");
+    if(exportP!=NULL){
+        fprintf(exportP, "%d", inGpioNumber);
+        fclose(exportP);
+    }
 }
 
 void
 gpio_unexport(const int inGpioNumber)
 {
-  FILE* unexportP = fopen("/sys/class/gpio/unexport","w");
-  if(unexportP!=NULL){
-    fprintf(unexportP, "%d", inGpioNumber);
-    fclose(unexportP);
-  }
+    if(inGpioNumber == -1)
+    {
+        return;
+    }
+
+    FILE* unexportP = fopen("/sys/class/gpio/unexport","w");
+    if(unexportP!=NULL){
+        fprintf(unexportP, "%d", inGpioNumber);
+        fclose(unexportP);
+    }
 }
 
 void
 gpio_setToOutput(const int inGpioNumber)
 {
-  char gpioPath[100];
-  sprintf(gpioPath, "/sys/class/gpio/gpio%d/direction", inGpioNumber);
-  FILE* directionP = fopen(gpioPath, "w");
-  if(directionP!=NULL){
-    fprintf(directionP, "out");
-    fclose(directionP);
-  }
+    char gpioPath[100];
+    if(inGpioNumber == -1)
+    {
+        return;
+    }
+
+    sprintf(gpioPath, "/sys/class/gpio/gpio%d/direction", inGpioNumber);
+    FILE* directionP = fopen(gpioPath, "w");
+    if(directionP!=NULL){
+        fprintf(directionP, "out");
+        fclose(directionP);
+    }
 }
 
 void
 gpio_setToInput(const int inGpioNumber)
 {
-  char gpioPath[100];
-  sprintf(gpioPath, "/sys/class/gpio/gpio%d/direction", inGpioNumber);
-  FILE* directionP = fopen(gpioPath,"w");
-  if(directionP!=NULL){
-    fprintf(directionP, "in");
-    fclose(directionP);
-  }
+    char gpioPath[100];
+
+    if(inGpioNumber == -1)
+    {
+        return;
+    }
+
+    sprintf(gpioPath, "/sys/class/gpio/gpio%d/direction", inGpioNumber);
+    FILE* directionP = fopen(gpioPath,"w");
+    if(directionP!=NULL){
+        fprintf(directionP, "in");
+        fclose(directionP);
+    }
 }
 
 void
 gpio_set(const int inGpioNumber)
 {
-  char valuePath[100];
-  sprintf(valuePath, "/sys/class/gpio/gpio%d/value", inGpioNumber);
-  FILE* valueP = fopen(valuePath,"w");
-  if(valueP!=NULL){
-    fprintf(valueP, "1");
-    fclose(valueP);
-  }
+    char valuePath[100];
+    if(inGpioNumber == -1)
+    {
+        return;
+    }
+
+    sprintf(valuePath, "/sys/class/gpio/gpio%d/value", inGpioNumber);
+    FILE* valueP = fopen(valuePath,"w");
+    if(valueP!=NULL){
+        fprintf(valueP, "1");
+        fclose(valueP);
+    }
 }
 
 void
@@ -96,6 +122,10 @@ gpio_burst(const int inGpioNumber)
   char valuePath[100];
   char high = 1;
   char i = 0;
+  if(inGpioNumber == -1)
+  {
+      return;
+  }
   sprintf(valuePath, "/sys/class/gpio/gpio%d/value", inGpioNumber);
   FILE* valueP = fopen(valuePath,"w");;
   for (i = 0; i < 1; i++)
@@ -122,6 +152,11 @@ gpio_get(const int inGpioNumber, int* outValueP)
 {
   char valuePath[100];
   char value[5];
+  if(inGpioNumber == -1)
+  {
+      return;
+  }
+
   sprintf(valuePath, "/sys/class/gpio/gpio%d/value", inGpioNumber);
   FILE* valueP = fopen(valuePath,"r");
   if(valueP!=NULL){
@@ -139,6 +174,10 @@ void
 gpio_clear(const int inGpioNumber)
 {
   char valuePath[100];
+  if(inGpioNumber == -1)
+  {
+      return;
+  }
   sprintf(valuePath, "/sys/class/gpio/gpio%d/value", inGpioNumber);
   FILE* valueP = fopen(valuePath,"w");
   if(valueP!=NULL){

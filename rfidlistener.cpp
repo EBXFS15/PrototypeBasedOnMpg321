@@ -1,9 +1,9 @@
 #include "rfidlistener.h"
 
 
-rfidListener::rfidListener()
+rfidListener::rfidListener(Hardware hwType)
 {
-    openport();
+    openport(hwType);
 }
 
 rfidListener::~rfidListener()

@@ -13,6 +13,7 @@ extern "C" {
 #include <errno.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include "hardware.h"
 
 #define FALSE 0
 #define TRUE 1
@@ -25,7 +26,8 @@ extern "C" {
 /*!
  * \brief Port where the RFID reader is connected to.
  */
-#define MODEMDEVICE "/dev/ttyO0"
+#define MODEMDEVICE_BBB "/dev/ttyO0"
+#define MODEMDEVICE_PI3 "/dev/ttyAMA0"
 
 /*!
  * \brief Initial tag id for detection.
@@ -40,7 +42,14 @@ extern "C" {
  * \brief open the serial port
  * Very simple implementation to access the UART port.
  */
-void openport();
+
+/*!
+ * \brief openport the serial port
+ * \param device 0x01 for BBB, 0x02 for PI3
+ * Very simple implementation to access the UART port.
+ */
+void openport(Hardware hwType);
+
 /*!
  * \brief read from port in a blocking manner.
  *

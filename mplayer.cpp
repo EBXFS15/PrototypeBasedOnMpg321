@@ -58,7 +58,7 @@ arguments << "-input" << "nodefault-bindings";
 arguments << "-really-quiet" << "1";
 arguments << "-msglevel" << "statusline=6";
 arguments << "-msglevel" << "global=6";
-arguments << "-idle";
+arguments << "-idle" << "-softvol";
 player->start("mplayer", arguments);
 }
 
@@ -304,7 +304,8 @@ void mplayer::pause(){
  */
 void mplayer::setVolume(int value)
 {    
-    sendCommandToPlayer(QString("volume %1 1").arg(value));
+
+    //sendCommandToPlayer(QString("volume %1 1").arg(value));
 }
 
 /* Documentation follows */
